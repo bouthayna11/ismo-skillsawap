@@ -5,26 +5,29 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'stagiaire') {
     exit();
 }
 require_once 'config.php';
-$user_id   = $_SESSION['user_id'];
-$countDemandes = 0;
-$countSkills = 0;
-$countAides = 0;
+$user_id= $_SESSION['user_id'];
+//declare d'une variable qui compte le nombre des demandes d'user_id
+$nbdemandes= 0;
+//declare d'une variable qui compte le nombre des skilss (competence) d'user_id
+$nbcomp = 0;
+//declare d'une variable qui compte le nombre d'aides d'user_id
+$nbaides = 0;
 $xp = 0;
 $niveau = 1;
 $progress_percentage = 0;
 $initials = "";
 $nom_complet = "";
-$recentActivities = [];
+$activities = [];
 $xp_dans_le_niveau = 0;
 try {
-    $queryUser = $pdo->prepare("
-        SELECT u.prenom_uti, u.nom_uti, s.filiere 
+    //henia kanjibo ism filliere d stagairee
+    $Users= $pdo->prepare("SELECT u.prenom_uti, u.nom_uti, s.filiere 
         FROM utilisateur u 
         LEFT JOIN stagiaire s ON u.id_utilisateur = s.id_utilisateur 
         WHERE u.id_utilisateur = ?");
-    $queryUser->execute([$_SESSION['user_id']]);
-    $user = $queryUser->fetch();
-    
+    $Users->execute([$user_id]);
+    $user = $Users->fetch();
+    //ila kan kayn had user kanemlolo initial dyalo (Awel harf mn nom awel harf mn prenom)
     if ($user) {
         $nom_complet = htmlspecialchars($user['prenom_uti'] . ' ' . $user['nom_uti']);
         $initials = strtoupper(substr($user['prenom_uti'] , 0, 1) . substr($user['nom_uti'] , 0, 1));
@@ -32,43 +35,40 @@ try {
     } else {
         $nom_complet = "Stagiaire";
         $initials = "ST";
-    }    
-    $stmtCountDemandes = $pdo->prepare("SELECT COUNT(*) FROM demande_aide WHERE id_stagiaire = ?");
-    $stmtCountDemandes->execute([$_SESSION['user_id']]);
-    $countDemandes = $stmtCountDemandes->fetchColumn();
-
-    $stmtCountSkills = $pdo->prepare("SELECT COUNT(*) FROM validation WHERE id_stagiaire = ? AND etat_validation = 'valide'");
-    $stmtCountSkills->execute([$_SESSION['user_id']]);
-    $countSkills = $stmtCountSkills->fetchColumn();
-    $stmtCountAides = $pdo->prepare("SELECT COUNT(*) FROM entraide WHERE id_mentor = ?");
-    $stmtCountAides->execute([$_SESSION['user_id']]);
-    $countAides = $stmtCountAides->fetchColumn(); 
-    $xp = ($countSkills * 1200) + ($countDemandes * 300);
+    }  
+    //henia kanjibo leadad d demandes li emloum had stagire b count   
+    $demandes = $pdo->prepare("SELECT COUNT(*) FROM demande_aide WHERE id_stagiaire = ?");
+    $demandes->execute([$user_id]);
+    $nbdemandes= $demandes->fetchColumn();
+    //henia kanjibo leadad d competence mvalidyin li emloum had stagire b count  
+    $competences = $pdo->prepare("SELECT COUNT(*) FROM validation WHERE id_stagiaire = ? AND etat_validation = 'valide'");
+    $competences->execute([$user_id]);
+    $nbcomp = $competences->fetchColumn();
+    //henia kanjibo leadad d aide li emloum had stagire b count  
+    $Aides = $pdo->prepare("SELECT COUNT(*) FROM reponses_aide WHERE id_aidant = ?");
+    $Aides->execute([$user_id]);
+    $nbaides = $Aides->fetchColumn(); 
+    //henia kanhesbo xp dyalo ela hasab nbcompetnce dyalo o chehal mn aide emel 
+    $xp = ($nbcomp * 1200) + ($nbdemandes* 300);
         $niveau = 1 + floor($xp / 2000); 
     $xp_dans_le_niveau = $xp % 2000;
     $progress_percentage = ($xp_dans_le_niveau / 2000) * 100;
-$updateXp = $pdo->prepare("UPDATE stagiaire SET score_global = :xp WHERE id_utilisateur = :id");
-$updateXp->execute(['xp' => $xp, 'id' => $user_id]);
-
-$niveau = 1 + floor($xp / 2000);
-$updateXp = $pdo->prepare("UPDATE stagiaire SET score_global = :xp WHERE id_utilisateur = :id");
-$updateXp->execute(['xp' => $xp, 'id' => $user_id]);
-    $stmtRecentAct = $pdo->prepare("SELECT titre, technologie FROM demande_aide WHERE id_stagiaire = ? ORDER BY id_demande DESC LIMIT 3");
-    $stmtRecentAct->execute([$_SESSION['user_id']]);
-    $recentActivities = $stmtRecentAct->fetchAll();
-$stmtBadges = $pdo->prepare("SELECT b.nom_badge, b.description_badge, b.image_badge 
+    //henia kanemlo update l score_global dyalo b xp li hesbna
+$newxp = $pdo->prepare("UPDATE stagiaire SET score_global =? WHERE id_utilisateur =?");
+$newxp->execute([$xp,$user_id]);
+//henia kanjibo agherr haja emla bhal chi demandes emla 
+$lastrecent = $pdo->prepare("SELECT titre, technologie FROM demande_aide WHERE id_stagiaire = ? ORDER BY id_demande DESC LIMIT 3");
+$lastrecent->execute([$user_id]);
+$activities = $lastrecent->fetchAll();
+//henia kanjibo lbadgat li eandoo li tetawlo mn eand admin wla formateur
+$badges = $pdo->prepare("SELECT b.nom_badge, b.description_badge, b.image_badge 
     FROM badges b
     JOIN obtenir o ON b.id_badge = o.id_badge
     WHERE o.id_utilisateur = ?");
-$stmtBadges->execute([$_SESSION['user_id']]);
-$mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
-$stmtBadges->execute([$_SESSION['user_id']]);
-$mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
-
+$badges->execute([$user_id]);
+$mes_badges = $badges->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
-    echo "<div style='color:red; background:#fee2e2; padding:12px; margin:15px; border-radius:8px; font-weight:bold; font-family:sans-serif;'>
-            ⚠️ خطأ في الاستعلام: " . $e->getMessage() . "
-          </div>";
+    echo "<div style='color:red;'>Erreur en connexion avec les donnes de base donne: " . $e->getMessage() . "</div>";
 }
 ?>
 <!DOCTYPE html>
@@ -202,9 +202,10 @@ $mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
                 <h3>Niveau <?php echo $niveau; ?> <span class="xp-badge"><?php echo $xp; ?> XP</span></h3>
                 <div class="stars">
                     <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    <i class="<?php echo ($countSkills >= 3) ? 'fas fa-star' : 'fas fa-star-half-alt'; ?>"></i>
+
+                    <i class="<?php echo ($nbcomp >= 3) ? 'fas fa-star' : 'fas fa-star-half-alt'; ?>"></i>
                     <span style="color: var(--text-muted); font-size: 13px; margin-left: 6px; font-weight: 500;">
-                        <?php echo number_format(min(4.0 + ($countSkills * 0.2), 5.0), 1); ?> (<?php echo $countDemandes + 3; ?> avis)
+                        <?php echo number_format(min(4.0 + ($nbcomp * 0.2), 5.0), 1); ?> (<?php echo $nbdemandes+ 3; ?> avis)
                     </span>
                 </div>
                 <p class="progress-text">Progression vers niveau <?php echo ($niveau + 1); ?> <span style="float: right; font-weight: 600;"><?php echo $xp_dans_le_niveau; ?> / 2000 XP</span></p>
@@ -217,15 +218,15 @@ $mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
 
         <div class="stats-grid">
             <div class="card-stat">
-                <span class="val"><?php echo $countDemandes; ?></span>
+                <span class="val"><?php echo $nbdemandes; ?></span>
                 <span class="label">Demandes créées</span>
             </div>
             <div class="card-stat">
-                <span class="val"><?php echo $countAides; ?></span>
+                <span class="val"><?php echo $nbaides; ?></span>
                 <span class="label">Aides réalisées</span>
             </div>
             <div class="card-stat">
-                <span class="val"><?php echo $countSkills; ?></span>
+                <span class="val"><?php echo $nbcomp; ?></span>
                 <span class="label">Compétences validées</span>
             </div>
         </div>
@@ -233,8 +234,8 @@ $mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
         <div class="middle-row">
             <div class="section-card">
                 <h3>Activité récente</h3>
-                <?php if (count($recentActivities) > 0): ?>
-                    <?php foreach ($recentActivities as $act): ?>
+                <?php if (count($activities) > 0): ?>
+                    <?php foreach ($activities as $act): ?>
                         <div class="act-item">
                             <span><span class="act-dot">•</span>Vous avez créé la demande "<?php echo htmlspecialchars($act['titre']); ?>" en <?php echo htmlspecialchars($act['technologie']); ?></span>
                             <span class="act-time">Récemment</span>

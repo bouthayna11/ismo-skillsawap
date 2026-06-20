@@ -4,98 +4,92 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
 include('config.php');
-
-$userId   = $_SESSION['user_id'];
-$userRole = $_SESSION['user_role'];
-
-// جلب معلومات المستخدم
-$queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = :id");
-$queryUser->execute(['id' => $userId]);
-$user     = $queryUser->fetch();
+$id_user= $_SESSION['user_id'];
+$role= $_SESSION['user_role'];
+//kanjibo maeloumat dyal utulisateur bash nemlolo initial
+$Users= $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur =?");
+$Users->execute([$id_user]);
+$user= $Users->fetch();
 $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
-
-$dashboard_link = "dashboard.php";
-if ($userRole === 'formateur')                                   { $dashboard_link = "dashboard_formateur.php"; }
-elseif ($userRole === 'administrateur' || $userRole === 'admin') { $dashboard_link = "dashboard_admin.php"; }
-
+$actuelle_dashboard = "dashboard.php";
+if ($role=== 'formateur'){ $actuelle_dashboard = "dashboard_formateur.php"; }
+elseif ($role=== 'admin') { $actuelle_dashboard = "dashboard_admin.php"; }
 $success_msg = '';
 $error_msg   = '';
-
-// =====================================================================
-// معالجة إرسال طلب validation كومبيتانس جديدة
-// =====================================================================
+// Validation d'une nouvelle compétence:
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_demande'])) {
-    $id_comp = (int) $_POST['id_comp'];
-
+    extract($_POST);
+    $id_comp= (int)$idcom;
     if ($id_comp > 0) {
-        // تحقق: واش ماعندوش طلب pending على نفس الكومبيتانس
-        $chkPending = $pdo->prepare(
-            "SELECT COUNT(*) FROM validation WHERE id_stagiaire = :u AND id_comp = :c AND etat_validation = 'en_attente'"
-        );
-        $chkPending->execute(['u' => $userId, 'c' => $id_comp]);
-
-        // تحقق: واش ماعندوش هاد الكومبيتانس بالفعل فـ maitriser
-        $chkMaitriser = $pdo->prepare(
-            "SELECT COUNT(*) FROM maitriser WHERE id_utilisateur = :u AND id_comp = :c"
-        );
-        $chkMaitriser->execute(['u' => $userId, 'c' => $id_comp]);
-
-        if ($chkPending->fetchColumn() > 0) {
+        // Vérifier qu'il n'existe pas déjà une demande en attente pour cette compétence
+        //hena kanchofo wash kayna had talab f tableau d validation yaeni en attente absh mayeawedshi ysarda
+        $chekcomp = $pdo->prepare(
+            "SELECT COUNT(*) FROM validation WHERE id_stagiaire=? AND id_comp=? AND etat_validation = 'en_attente'");
+        $chekcomp->execute([$id_user,$id_comp]);
+        // Vérifier que cette compétence n'existe pas déjà dans la table maitriser
+        // hena kanchofo eawed wash makaynashi f tableau d maitriser yaeni heya eando maymknshi yeawed ytleb validation
+        $maitriser = $pdo->prepare(
+            "SELECT COUNT(*) FROM maitriser WHERE id_utilisateur=? AND id_comp =?");
+        $maitriser->execute([ $id_user,$id_comp]);
+        //ila kan dek chekcomp ketar mn 0 yaeni kayna competence bdek id d stagaire o en attende yaeni khaso ytsena ta tvalida mn eand formateur
+        if ($chekcomp->fetchColumn() > 0) {
             $error_msg = "Vous avez déjà une demande en attente pour cette compétence.";
-        } elseif ($chkMaitriser->fetchColumn() > 0) {
+        //nfs chi henia mea maitriser ila kant maitriser rah meando elash yeawed validation anaffichiw had mssj
+        } elseif ($maitriser->fetchColumn() > 0) {
             $error_msg = "Vous maîtrisez déjà cette compétence.";
+        // ila makant la condition la 2 anzidoha f tableau d validation katzad b satatut d en-attende ta tvalida mn eand formateur wla admin
         } else {
             $ins = $pdo->prepare(
                 "INSERT INTO validation (date_validation, etat_validation, id_comp, id_stagiaire) 
-                 VALUES (CURDATE(), 'en_attente', :c, :u)"
+                 VALUES (CURDATE(), 'en_attente',?, ?)"
             );
-            $ins->execute(['c' => $id_comp, 'u' => $userId]);
+            $ins->execute([ $id_comp,$id_user]);
             $success_msg = "Demande envoyée ! En attente de validation par le formateur.";
         }
     } else {
         $error_msg = "Veuillez sélectionner une compétence.";
     }
 }
+// =====================================================================
 
-// =====================================================================
-// جلب الكومبيتانس المقبولة ديال هاد الستاجير (من maitriser)
-// =====================================================================
-$stmtMaitriser = $pdo->prepare(
+// Récupérer les compétences déjà maîtrisées par ce stagiaire
+// henia kanjibo l competnce l mvalidyin yaeni etat_validation="valide"
+$compmaitriser = $pdo->prepare(
     "SELECT m.id_comp, m.niveau_estime, c.nom_comp, c.categorie
      FROM maitriser m
      JOIN competence c ON m.id_comp = c.id_comp
-     WHERE m.id_utilisateur = :u
+     WHERE m.id_utilisateur =?
      ORDER BY c.categorie, c.nom_comp"
 );
-$stmtMaitriser->execute(['u' => $userId]);
-$mes_competences = $stmtMaitriser->fetchAll(PDO::FETCH_ASSOC);
+$compmaitriser->execute([$id_user]);
+$mes_competences = $compmaitriser->fetchAll(PDO::FETCH_ASSOC);
 
 // =====================================================================
-// جلب الطلبات المعلقة (en_attente) والمرفوضة (refuse)
-// =====================================================================
+
+// Récupération des demandes en attente et refusées
+//henia kanjibo maeloumat ela competence li eandoum etat_validation="en-attende" wla "refuse" kaneadlohoum fblassa bohdoum
 $stmtPending = $pdo->prepare(
     "SELECT v.id_validation, v.etat_validation, v.date_validation, c.nom_comp, c.categorie, c.id_comp
      FROM validation v
      JOIN competence c ON v.id_comp = c.id_comp
-     WHERE v.id_stagiaire = :u AND v.etat_validation IN ('en_attente', 'refuse')
+     WHERE v.id_stagiaire = ? AND v.etat_validation IN ('en_attente', 'refuse')
      ORDER BY v.date_validation DESC"
 );
-$stmtPending->execute(['u' => $userId]);
+$stmtPending->execute([$id_user]);
 $demandes = $stmtPending->fetchAll(PDO::FETCH_ASSOC);
 
 // =====================================================================
-// جلب كاع الكومبيتانس المتاحة (اللي ما طلبهاش وما عندوش)
-// =====================================================================
-$myCompIds     = array_column($mes_competences, 'id_comp');
-$pendingIds    = array_column($demandes, 'id_comp');
-$excludeIds    = array_unique(array_merge($myCompIds, $pendingIds));
-
+// Récupération de toutes les compétences disponibles (non demandées et non maîtrisées)
+// henia kanjino competence li baqi maemloum demande baqi ma validahoum 
+$myCompIds = array_column($mes_competences, 'id_comp');
+$pendingIds = array_column($demandes, 'id_comp');
+$excludeIds= array_unique(array_merge($myCompIds, $pendingIds));
 $allComps = $pdo->query("SELECT id_comp, nom_comp, categorie FROM competence ORDER BY categorie, nom_comp")->fetchAll(PDO::FETCH_ASSOC);
 $available = array_filter($allComps, fn($c) => !in_array($c['id_comp'], $excludeIds));
 
-// تجميع الكومبيتانس حسب الكاتيكوري
+// Regroupement des compétences par catégorie
+// henia kanjibo competnce ela hasab categorie zaema wash developpement wla IT ..
 $by_category = [];
 foreach ($mes_competences as $comp) {
     $by_category[$comp['categorie'] ?? 'Général'][] = $comp;
@@ -225,7 +219,7 @@ foreach ($mes_competences as $comp) {
     <h1>ISMO SkillSwap</h1>
     <p class="menu-title">GENERAL</p>
     <nav>
-        <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
+        <a href="<?php echo $actuelle_dashboard; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
         <a href="profil.php"        class="menu-item"><i class="far fa-user"></i>           <span>Profil</span></a>
 
         <p class="menu-title">ACTIVITÉ</p>
@@ -237,11 +231,6 @@ foreach ($mes_competences as $comp) {
         <a href="competence.php"    class="menu-item active"><i class="fas fa-award"></i>    <span>Compétences</span></a>
         <a href="mentors.php"       class="menu-item"><i class="fas fa-user-graduate"></i>   <span>Mentors</span></a>
         <a href="passport.php"      class="menu-item"><i class="fas fa-id-card"></i>         <span>Passeport</span></a>
-
-        <?php if ($userRole === 'admin' || $userRole === 'administrateur'): ?>
-            <p class="menu-title">ADMIN</p>
-            <a href="admin.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Admin</span></a>
-        <?php endif; ?>
     </nav>
     <div style="margin-top:auto;">
         <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
@@ -259,7 +248,7 @@ foreach ($mes_competences as $comp) {
 
     <h1 class="page-title">Mes Compétences</h1>
     <p class="page-sub">Demandez la validation de vos compétences auprès du formateur</p>
-
+    <!--henia ila kan chi wahd mn dek condition li emlna ela hasab demmandes kanaffichiwah henia-->
     <?php if ($success_msg): ?>
         <div class="alert alert-success"><i class="fas fa-check-circle"></i><?php echo htmlspecialchars($success_msg); ?></div>
     <?php endif; ?>
@@ -267,7 +256,6 @@ foreach ($mes_competences as $comp) {
         <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?php echo htmlspecialchars($error_msg); ?></div>
     <?php endif; ?>
 
-    <!-- Stats -->
     <div class="stats-bar">
         <div class="stat-box">
             <div class="stat-num"><?php echo count($mes_competences); ?></div>
@@ -291,11 +279,11 @@ foreach ($mes_competences as $comp) {
 
         <div style="display:flex; flex-direction:column; gap:24px;">
 
-            <!-- ══ Compétences validées ══ -->
+            <!--henia kanaffichiw lcompentce li mvalidyin li jibnahoum foq f php ismoum $mes_competences-->
             <div class="section-card">
                 <p class="section-title"><i class="fas fa-check-circle"></i> Compétences validées</p>
-
                 <?php if (empty($mes_competences)): ?>
+                    <!--ila kan array khawi yaeni makayna ta comp m validya anketbo hadshi-->
                     <div class="empty-state">
                         <i class="fas fa-award"></i>
                         <p>Aucune compétence validée pour l'instant.<br>Envoyez une demande au formateur !</p>
@@ -328,7 +316,7 @@ foreach ($mes_competences as $comp) {
                 <?php endif; ?>
             </div>
 
-            <!-- ══ Demandes en cours ══ -->
+            <!-- henia kanemlo l competence en-attente wla li refuse li jibnahoum foq mn BD siminahoum $demandes-->
             <?php if (!empty($demandes)): ?>
             <div class="section-card">
                 <p class="section-title"><i class="fas fa-clock"></i> Demandes en cours</p>
@@ -362,8 +350,8 @@ foreach ($mes_competences as $comp) {
                 <form method="POST" action="competence.php">
                     <input type="hidden" name="action_demande" value="1">
                     <div class="form-group">
-                        <label for="id_comp">Compétence</label>
-                        <select id="id_comp" name="id_comp" required>
+                        <label for="idcom">Compétence</label>
+                        <select id="idcom" name="idcom" required>
                             <option value="">Sélectionner...</option>
                             <?php
                             $lastCat = '';

@@ -4,60 +4,70 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: dashboard.php");
     exit();
 }
-
 require_once 'config.php';
-
 $userId   = $_SESSION['user_id'];
 $userRole = $_SESSION['user_role'];
+//hena nfs chi kanibo maeloumat dyal utulisateur bash nemlolo initial
+$users = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur =?");
+$users->execute([$userId]);
+$user = $users->fetch();
+$initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_supprimer'])) {
-    $id_demande = (int) $_POST['id_demande'];
-    $check = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande = :id");
-    $check->execute(['id' => $id_demande]);
+    extract($_POST);
+    $id_demande = (int)$iddem;
+    //henia kanjibo id_stagiare bash nkhaliwah ymsah demande d'aide li eando dek id dyal dek demmande
+    $check = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande =?");
+    $check->execute([$id_demande]);
     $ownerId = $check->fetchColumn();
-    if ($ownerId == $userId || $userRole === 'formateur' || $userRole === 'admin' || $userRole === 'administrateur') {
+    //ila jbarnah li dakhel lhad page(userId) howa nfso $ownerId ankhaliwah ymsah wla ila kan admin wla heta formateur 
+    if ($ownerId == $userId || $userRole === 'formateur' || $userRole === 'admin') {
+        //henia kanmsho nichan mn table dyal reponses_aide zaema kanmsho les reponse dyal had demandes 
         $pdo->prepare("DELETE FROM reponses_aide WHERE id_demande = ?")->execute([$id_demande]);
+        // op henia kanmsho mn table dyal demande_aide dek demnade b dek id
         $pdo->prepare("DELETE FROM demande_aide WHERE id_demande = ?")->execute([$id_demande]);
     }
+    //sf mili kaymsah kankhaliwah fnfs page 
     header("Location: demandes_aide.php");
     exit();
 }
-$queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = :id");
-$queryUser->execute(['id' => $userId]);
-$user = $queryUser->fetch();
-
-$initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
+//henia bash nsardo lkol wahd l dashboard dyalo 
 $dashboard_link = "dashboard.php";
 if ($userRole === 'formateur'){ $dashboard_link = "dashboard_formateur.php"; }
-elseif ($userRole === 'administrateur' || $userRole === 'admin') { $dashboard_link = "dashboard_admin.php"; }
+elseif ($userRole === 'admin') { $dashboard_link = "dashboard_admin.php"; }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reponse_new'])) {
-    $id_demande = (int) $_POST['id_demande'];
-    $message    = trim($_POST['message']);
+    extract($_POST);
+    $id_demande = (int) $iddem;
+    $message= trim($message);
     if (!empty($message)) {
+        //henia kanjibo  lid dyal had stagiare b id dyal demandes bash mankhaliwahshi yjaweb ela rasso
         $checkOwner = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande = :id");
-        $checkOwner->execute(['id' => $id_demande]);
+        $checkOwner->execute([$id_demande]);
         $ownerId = $checkOwner->fetchColumn();
-
+        // ila kan kaykhalef lajawab li kaytsardlo kanzidouh f reponses_aide b condition:
         if ($ownerId != $userId) {
-            $checkDouble = $pdo->prepare("SELECT COUNT(*) FROM reponses_aide WHERE id_demande = :id AND id_aidant = :aidant");
-            $checkDouble->execute(['id' => $id_demande, 'aidant' => $userId]);
+            //henia kanchofo f table dyal reponses awal haja wash fayto had aidant sard ljawab dyalo bash mayeaweshu yjaweb ketar mn mara 
+            $checkDouble = $pdo->prepare("SELECT COUNT(*) FROM reponses_aide WHERE id_demande =? AND id_aidant =?");
+            $checkDouble->execute([ $id_demande,$userId]);
             $already = $checkDouble->fetchColumn();
-
+            //ila kan zero sf dek saea ead kanzidouh f reponse aide b statut en-attende ta ybdela li tsardlo ljawab 
             if ($already == 0) {
-                $ins = $pdo->prepare("INSERT INTO reponses_aide (id_demande, id_aidant, message, statut) VALUES (:id, :aidant, :msg, 'en_attente')");
-                $ins->execute(['id' => $id_demande, 'aidant' => $userId, 'msg' => $message]);
+                $ins = $pdo->prepare("INSERT INTO reponses_aide (id_demande, id_aidant, message, statut) VALUES (?,?,?,'en_attente')");
+                $ins->execute([$id_demande,$userId,$message]);
             }
         }
     }
     header("Location: demandes_aide.php#demande-" . $id_demande);
     exit();
 }
+//henia bash naffichiw lreponse dyal chi demandes
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reponse'])) {
-    $id_reponse = (int) $_POST['id_reponse'];
-    $status     = $_POST['status'];
+    extract($_POST);
+    $id_reponse = (int)$idrep;
+    //kanjibo henia l reponse l mol had demandes bash ybdel statut dyala 
     $check = $pdo->prepare("SELECT d.id_stagiaire FROM reponses_aide r 
-                             JOIN demande_aide d ON r.id_demande = d.id_demande 
-                             WHERE r.id_reponse = :id");
-    $check->execute(['id' => $id_reponse]);
+            JOIN demande_aide d ON r.id_demande = d.id_demande 
+            WHERE r.id_reponse =?");
+    $check->execute([$id_reponse]);
     $owner = $check->fetchColumn();
     if ($owner == $userId && in_array($status, ['accepte', 'refuse'])) {
         $upd = $pdo->prepare("UPDATE reponses_aide SET statut = :statut WHERE id_reponse = :id");
@@ -66,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reponse'])) {
     header("Location: demandes_aide.php");
     exit();
 }
+//henia kanjibo demandes  kamlen bash naffichiwhoum
 $query = $pdo->query(
     "SELECT d.id_demande, d.titre, d.description, d.technologie,
             d.niveau, d.filiere, d.id_stagiaire, u.nom_uti, u.prenom_uti
@@ -182,6 +193,7 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
                 <i class="far fa-question-circle"></i> 
                 <span><?php echo ($userRole === 'formateur') ? "Offres d'aide" : "Demandes d'aide"; ?></span>
             </a>
+            <!--henia ila kan stagiare kanaffichiw creer_demande--->
             <?php if ($userRole === 'stagiaire'): ?>
                 <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
             <?php endif; ?>
@@ -221,14 +233,15 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
 
             <?php foreach ($db_demandes as $d):
                 $isOwner = ($d['id_stagiaire'] == $userId);
+                //henia kan ibo reponse dyal had demandes b dabt
                 $stmt = $pdo->prepare(
                     "SELECT r.*, u.prenom_uti, u.nom_uti
                      FROM reponses_aide r
                      JOIN utilisateur u ON r.id_aidant = u.id_utilisateur
-                     WHERE r.id_demande = :id
+                     WHERE r.id_demande = ?
                      ORDER BY r.id_reponse ASC"
                 );
-                $stmt->execute(['id' => $d['id_demande']]);
+                $stmt->execute([$d['id_demande']]);
                 $reponses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 $nb_accepte = count(array_filter($reponses, fn($r) => ($r['statut'] ?? '') === 'accepte'));
                 $dejaRepondu = false;
@@ -246,7 +259,7 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
         <?php if ($userRole === 'admin'): ?>
             <form method="POST" action="demandes_aide.php" style="margin:0;">
                 <input type="hidden" name="action_supprimer" value="1">
-                <input type="hidden" name="id_demande" value="<?php echo $d['id_demande']; ?>">
+                <input type="hidden" name="iddem" value="<?php echo $d['id_demande']; ?>">
                 <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?')" 
                         style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px;" title="Supprimer">
                     <i class="fas fa-trash-alt"></i>
@@ -279,8 +292,8 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
                         <?php if ($isOwner && empty($reponses)): ?>
                             — <span style="color:#94a3b8; font-weight:400; font-style:italic;">aucune réponse pour l'instant</span>
                         <?php endif; ?>
-                    </p>
-
+                        </p>
+                        <!--henia bash ybdel statut dyal reponse mol demande-->
                     <?php foreach ($reponses as $rep):
                         $statut = $rep['statut'] ?? 'en_attente';
                         $statusLabel = match($statut) {
@@ -305,13 +318,13 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
                         <div class="rep-actions">
                             <form method="POST" action="demandes_aide.php">
                                 <input type="hidden" name="action_reponse" value="1">
-                                <input type="hidden" name="id_reponse" value="<?php echo (int)$rep['id_reponse']; ?>">
+                                <input type="hidden" name="idrep" value="<?php echo (int)$rep['id_reponse']; ?>">
                                 <input type="hidden" name="status" value="accepte">
                                 <button type="submit" class="btn-accept" onclick="return confirm('Accepter cette réponse ?')"><i class="fas fa-check"></i> Accepter</button>
                             </form>
                             <form method="POST" action="demandes_aide.php">
                                 <input type="hidden" name="action_reponse" value="1">
-                                <input type="hidden" name="id_reponse" value="<?php echo (int)$rep['id_reponse']; ?>">
+                                <input type="hidden" name="idrep" value="<?php echo (int)$rep['id_reponse']; ?>">
                                 <input type="hidden" name="status" value="refuse">
                                 <button type="submit" class="btn-refuse" onclick="return confirm('Refuser cette réponse ?')"><i class="fas fa-times"></i> Refuser</button>
                             </form>
@@ -328,7 +341,7 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
                     <?php else: ?>
                         <form method="POST" action="demandes_aide.php">
                             <input type="hidden" name="action_reponse_new" value="1">
-                            <input type="hidden" name="id_demande" value="<?php echo (int)$d['id_demande']; ?>">
+                            <input type="hidden" name="iddem" value="<?php echo (int)$d['id_demande']; ?>">
                             <textarea name="message" placeholder="Écrivez votre réponse ici..." required></textarea>
                             <button type="submit" class="btn-reply"><i class="fas fa-paper-plane"></i> Envoyer</button>
                         </form>
