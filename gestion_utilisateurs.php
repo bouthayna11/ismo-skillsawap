@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 require_once 'config.php';
 $userId = $_SESSION['user_id'];
+$user_role = $_SESSION['user_role'];
 if (isset($_GET['action']) && isset($_GET['id_user'])) {
     $action = $_GET['action'];
     $id_user = intval($_GET['id_user']);

@@ -12,7 +12,10 @@ $countAides = 0;
 $xp = 0;
 $niveau = 1;
 $progress_percentage = 0;
-
+$initials = "";
+$nom_complet = "";
+$recentActivities = [];
+$xp_dans_le_niveau = 0;
 try {
     $queryUser = $pdo->prepare("
         SELECT u.prenom_uti, u.nom_uti, s.filiere 

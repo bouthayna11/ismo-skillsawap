@@ -95,7 +95,7 @@ $lastDemandes = $pdo->query(
         .stats-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:15px;ß
+    gap:15px;
 }
 
 .stat-card{
