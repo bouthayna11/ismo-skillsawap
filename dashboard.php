@@ -174,7 +174,7 @@ $mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
 
             <p class="menu-title">COMPÉTENCES</p>
             <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
-            <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+            <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
 <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
             <p class="menu-title" >COMPTE</p>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>

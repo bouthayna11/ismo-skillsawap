@@ -386,9 +386,9 @@
             <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
 
             <p class="menu-title">ACTIVITÉ</p>
-            <a href="demandesd'aide.php" class="menu-item"><i class="far fa-question-circle"></i> <span>Demandes
+            <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i> <span>Demandes
                     d'aide</span></a>
-            <a href="créerunedemande.php" class="menu-item" id="nav-creer"><i class="far fa-plus-square"></i> <span>Créer
+            <a href="creer_demande.php" class="menu-item" id="nav-creer"><i class="far fa-plus-square"></i> <span>Créer
                     une demande</span></a>
             <a href="recherche.php" class="menu-item active"><i class="fas fa-search"></i> <span>Recherche</span></a>
 

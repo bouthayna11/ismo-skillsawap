@@ -242,7 +242,7 @@ foreach ($all_mentors as $m) {
 
         <p class="menu-title">COMPÉTENCES</p>
         <a href="competence.php"    class="menu-item"><i class="fas fa-award"></i>           <span>Compétences</span></a>
-        <a href="mentors.php"       class="menu-item active"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+        <a href="Mentors.php"       class="menu-item active"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
         <a href="passport.php"      class="menu-item"><i class="fas fa-id-card"></i>         <span>Passeport</span></a>
 
         <?php if ($userRole === 'admin' || $userRole === 'administrateur'): ?>
