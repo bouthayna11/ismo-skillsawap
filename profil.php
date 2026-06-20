@@ -217,11 +217,15 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         </a>
         <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors </span>
             <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
-        </a>        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
+        </a><a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
         <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide</span></a>
         <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i>    <span>Mentors</span></a>
         <?php endif; ?>
-    </nav>
+        <?php if (in_array($user_role, ['admin', 'adminstrateur'])): ?>
+            <a href="gestion_categories.php"  class="menu-item"><i class="fas fa-tags"></i> <span>Gestion des categories</span></a>
+            <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
+            <?php endif; ?>
+        </nav>
     <div style="margin-top:auto;">
         <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </div>
