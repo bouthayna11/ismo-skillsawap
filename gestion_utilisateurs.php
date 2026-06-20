@@ -40,6 +40,9 @@ try {
     echo "Erreur Database : " . $e->getMessage();
     exit();
 }
+$dashboard_link = "dashboard.php";
+if ($user_role === 'formateur')                                    { $dashboard_link = "dashboard_formateur.php"; }
+elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_link = "dashboard_admin.php"; }
 ?>
 <!DOCTYPE html>
 <html lang="fr">

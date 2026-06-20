@@ -60,18 +60,16 @@ $lastDemandes = $pdo->query(
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --sidebar-bg:    #0f172a;
-            --primary:       #ef4444;
-            --primary-dark:  #dc2626;
-            --main-bg:       #f8fafc;
-            --border:        #e2e8f0;
-            --text-main:     #1e293b;
-            --text-muted:    #64748b;
-            --green:         #22c55e;
-            --blue:          #6366f1;
-            --yellow:        #f59e0b;
-            --purple:        #a855f7;
+         :root { 
+            --sidebar-bg: #1e293b; 
+            --primary: #4f46e5; 
+            --primary-hover: #3730a3;
+            --main-bg: #f8fafc; 
+            --border: #e2e8f0; 
+            --text-main: #1e293b; 
+            --text-muted: #64748b; 
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -79,13 +77,12 @@ $lastDemandes = $pdo->query(
 
         /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar h1 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-        .sidebar .admin-tag { font-size: 10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 20px; font-weight: 600; display: inline-block; margin-bottom: 28px; }
-        .menu-title { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
-        .menu-item  { display: flex; align-items: center; text-decoration: none; color: #94a3b8; padding: 11px 16px; border-radius: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
+        .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
+        .menu-item  { display: flex; align-items: center; text-decoration: none; color: #cbd5e1; padding: 12px 16px; border-radius: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 500; }
         .menu-item i { margin-right: 12px; width: 20px; text-align: center; }
-        .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
-        .notif-dot { background: var(--yellow); color: #1e293b; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto; }
+        .menu-item:hover, .menu-item.active { background: var(--primary); color: white;}
+        .notif-dot { background: var(--yellow); color: #d6b810; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto;}
 
         /* Main */
         .main  { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 28px; }
@@ -95,18 +92,37 @@ $lastDemandes = $pdo->query(
 
         .page-title { font-size: 24px; font-weight: 700; }
         .page-sub   { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;ß
+}
 
-        /* Stats grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        .stat-card  { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 20px 22px; display: flex; align-items: center; gap: 16px; }
-        .stat-icon  { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-        .stat-icon.red    { background: #fef2f2; color: var(--primary); }
-        .stat-icon.blue   { background: #eef2ff; color: var(--blue); }
-        .stat-icon.green  { background: #f0fdf4; color: var(--green); }
-        .stat-icon.yellow { background: #fefce8; color: var(--yellow); }
-        .stat-icon.purple { background: #faf5ff; color: var(--purple); }
-        .stat-num   { font-size: 26px; font-weight: 700; line-height: 1; }
-        .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.stat-card{
+    background:#fff;
+    border-radius:14px;
+    padding:18px;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+    transition:0.3s;
+}
+
+.stat-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 8px 20px rgba(0,0,0,.10);
+}
+
+.stat-num{
+    font-size:24px;
+    font-weight:700;
+}
+
+.stat-label{
+    font-size:13px;
+    color:#64748b;
+}
 
         /* Section cards */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -136,9 +152,9 @@ $lastDemandes = $pdo->query(
 
         /* Top compétences */
         .comp-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .comp-rank { width: 24px; height: 24px; border-radius: 50%; background: #eef2ff; color: var(--blue); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .comp-rank { width: 24px; height: 24px; border-radius: 50%; background: #eceef1; color: var(--blue); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .comp-name { font-size: 14px; font-weight: 600; flex: 1; }
-        .comp-bar-wrap { flex: 2; background: #f1f5f9; border-radius: 20px; height: 6px; overflow: hidden; }
+        .comp-bar-wrap { flex: 2; background: #4c7094; border-radius: 20px; height: 6px; overflow: hidden; }
         .comp-bar { height: 100%; border-radius: 20px; background: var(--blue); }
         .comp-nb  { font-size: 12px; color: var(--text-muted); min-width: 28px; text-align: right; }
 
@@ -195,10 +211,9 @@ $lastDemandes = $pdo->query(
 
 <aside class="sidebar">
     <h1>ISMO SkillSwap</h1>
-    <span class="admin-tag">Admin Panel</span>
     <p class="menu-title">SUPERVISION</p>
     <nav>
-        <a href="dashboard_admin.php"      class="menu-item active"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
+        <a href="dashboard_admin.php"      class="menu-item active"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
         <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
         <p class="menu-title">CONTRÔLE</p>
         <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
@@ -210,6 +225,7 @@ $lastDemandes = $pdo->query(
         <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
         <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide</span></a>
+        <a href="gestion_categories.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide</span></a>
         <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i>    <span>Mentors</span></a>
     </nav>
     <div style="margin-top:auto;">
@@ -227,95 +243,75 @@ $lastDemandes = $pdo->query(
         <h1 class="page-title">Panneau de Contrôle Global</h1>
         <p class="page-sub">Bienvenue, <strong><?php echo $userNomComplet; ?></strong> — Surveillance de la plateforme ISMO SkillSwap</p>
     </div>
+    <!-- Statistiques Générales -->
+<div class="section-card">
+    <div class="section-title">
+        <span>
+            <i class="fas fa-chart-pie" style="color:#4f46e5;margin-right:8px;"></i>
+            Statistiques Générales
+        </span>
+    </div>
 
-    <!-- Stats principales -->
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon red"><i class="fas fa-users"></i></div>
+
+        <div class="stat-card" style="border-left:4px solid #4f46e5;">
+            <i class="fas fa-users" style="font-size:28px;color:#4f46e5;"></i>
             <div>
                 <div class="stat-num"><?php echo $statUsers; ?></div>
-                <div class="stat-label">Membres inscrits</div>
+                <div class="stat-label">Total Membres</div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon blue"><i class="fas fa-user-graduate"></i></div>
+
+        <div class="stat-card" style="border-left:4px solid #06b6d4;">
+            <i class="fas fa-user-graduate" style="font-size:28px;color:#06b6d4;"></i>
             <div>
                 <div class="stat-num"><?php echo $statStagiaires; ?></div>
                 <div class="stat-label">Stagiaires</div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon green"><i class="far fa-question-circle"></i></div>
-            <div>
-                <div class="stat-num"><?php echo $statDemandes; ?></div>
-                <div class="stat-label">Demandes d'aide</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon yellow"><i class="fas fa-handshake"></i></div>
-            <div>
-                <div class="stat-num"><?php echo $statAccepte; ?></div>
-                <div class="stat-label">Aides acceptées</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon purple"><i class="fas fa-award"></i></div>
-            <div>
-                <div class="stat-num"><?php echo $statCompValid; ?></div>
-                <div class="stat-label">Compétences validées</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon red"><i class="fas fa-chalkboard-teacher"></i></div>
-            <div>
-                <div class="stat-num"><?php echo $statMentors; ?></div>
-                <div class="stat-label">Mentors actifs</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon blue"><i class="fas fa-comments"></i></div>
-            <div>
-                <div class="stat-num"><?php echo $statReponses; ?></div>
-                <div class="stat-label">Réponses données</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon green"><i class="fas fa-chalkboard"></i></div>
+
+        <div class="stat-card" style="border-left:4px solid #10b981;">
+            <i class="fas fa-chalkboard-teacher" style="font-size:28px;color:#10b981;"></i>
             <div>
                 <div class="stat-num"><?php echo $statFormateurs; ?></div>
                 <div class="stat-label">Formateurs</div>
             </div>
         </div>
-    </div>
 
-    <!-- Alertes actions requises -->
-    <div class="alert-row">
-        <div class="alert-box pending">
-            <i class="fas fa-clipboard-check"></i>
+        <div class="stat-card" style="border-left:4px solid #f59e0b;">
+            <i class="fas fa-question-circle" style="font-size:28px;color:#f59e0b;"></i>
             <div>
-                <div class="alert-num"><?php echo $statCompPend; ?></div>
-                <div class="alert-label">Compétences en attente</div>
-                <a href="validation_competence.php" class="alert-link">Valider maintenant →</a>
+                <div class="stat-num"><?php echo $statDemandes; ?></div>
+                <div class="stat-label">Demandes d'aide</div>
             </div>
         </div>
-        <div class="alert-box danger">
-            <i class="fas fa-user-shield"></i>
-            <div>
-                <div class="alert-num"><?php echo $statMentorsPend; ?></div>
-                <div class="alert-label">Demandes Mentor en attente</div>
-                <a href="validation_mentors.php" class="alert-link">Traiter →</a>
-            </div>
-        </div>
-        <div class="alert-box success">
-            <i class="fas fa-check-circle"></i>
-            <div>
-                <div class="alert-num"><?php echo $statCompValid; ?></div>
-                <div class="alert-label">Compétences validées au total</div>
-                <a href="validation_competence.php?filter=valide" class="alert-link">Voir tout →</a>
-            </div>
-        </div>
-    </div>
 
+        <div class="stat-card" style="border-left:4px solid #8b5cf6;">
+            <i class="fas fa-comments" style="font-size:28px;color:#8b5cf6;"></i>
+            <div>
+                <div class="stat-num"><?php echo $statReponses; ?></div>
+                <div class="stat-label">Réponses</div>
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-left:4px solid #22c55e;">
+            <i class="fas fa-award" style="font-size:28px;color:#22c55e;"></i>
+            <div>
+                <div class="stat-num"><?php echo $statCompValid; ?></div>
+                <div class="stat-label">Compétences Validées</div>
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-left:4px solid #ef4444;">
+            <i class="fas fa-user-shield" style="font-size:28px;color:#ef4444;"></i>
+            <div>
+                <div class="stat-num"><?php echo $statMentors; ?></div>
+                <div class="stat-label">Mentors Validés</div>
+            </div>
+        </div>
+
+    </div>
+</div>
     <!-- Grid contenu -->
     <div class="grid-2">
 
@@ -368,29 +364,6 @@ $lastDemandes = $pdo->query(
 
     <!-- Dernières demandes + Quick Actions -->
     <div class="grid-2">
-
-        <!-- Dernières demandes -->
-        <div class="section-card">
-            <div class="section-title">
-                <span><i class="far fa-clock" style="color:var(--blue); margin-right:8px;"></i>Dernières demandes d'aide</span>
-                <a href="demandes_aide.php">Voir tout</a>
-            </div>
-            <?php foreach ($lastDemandes as $ld):
-                $statut = $ld['statut'] ?? 'ouverte';
-            ?>
-            <div class="demande-item">
-                <div class="status-dot <?php echo $statut; ?>"></div>
-                <div style="flex:1;">
-                    <div class="demande-title"><?php echo htmlspecialchars($ld['titre'] ?? ''); ?></div>
-                    <div class="demande-by"><?php echo htmlspecialchars($ld['prenom_uti'] . ' ' . $ld['nom_uti']); ?> • <?php echo $ld['date_publication'] ?? ''; ?></div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-            <?php if (empty($lastDemandes)): ?>
-                <p style="color:var(--text-muted); font-size:13px;">Aucune demande.</p>
-            <?php endif; ?>
-        </div>
-
         <!-- Quick Actions -->
         <div class="section-card">
             <div class="section-title"><span><i class="fas fa-bolt" style="color:var(--yellow); margin-right:8px;"></i>Actions Rapides</span></div>

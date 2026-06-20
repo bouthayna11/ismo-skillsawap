@@ -5,6 +5,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'stagiaire') {
     exit();
 }
 require_once 'config.php';
+$user_id   = $_SESSION['user_id'];
 $countDemandes = 0;
 $countSkills = 0;
 $countAides = 0;
@@ -43,9 +44,23 @@ try {
         $niveau = 1 + floor($xp / 2000); 
     $xp_dans_le_niveau = $xp % 2000;
     $progress_percentage = ($xp_dans_le_niveau / 2000) * 100;
+$updateXp = $pdo->prepare("UPDATE stagiaire SET score_global = :xp WHERE id_utilisateur = :id");
+$updateXp->execute(['xp' => $xp, 'id' => $user_id]);
+
+$niveau = 1 + floor($xp / 2000);
+$updateXp = $pdo->prepare("UPDATE stagiaire SET score_global = :xp WHERE id_utilisateur = :id");
+$updateXp->execute(['xp' => $xp, 'id' => $user_id]);
     $stmtRecentAct = $pdo->prepare("SELECT titre, technologie FROM demande_aide WHERE id_stagiaire = ? ORDER BY id_demande DESC LIMIT 3");
     $stmtRecentAct->execute([$_SESSION['user_id']]);
     $recentActivities = $stmtRecentAct->fetchAll();
+$stmtBadges = $pdo->prepare("SELECT b.nom_badge, b.description_badge, b.image_badge 
+    FROM badges b
+    JOIN obtenir o ON b.id_badge = o.id_badge
+    WHERE o.id_utilisateur = ?");
+$stmtBadges->execute([$_SESSION['user_id']]);
+$mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
+$stmtBadges->execute([$_SESSION['user_id']]);
+$mes_badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (Exception $e) {
     echo "<div style='color:red; background:#fee2e2; padding:12px; margin:15px; border-radius:8px; font-weight:bold; font-family:sans-serif;'>
@@ -251,41 +266,29 @@ try {
         </div>
 
         <div class="section-card">
-            <h3>Badges récents</h3>
-            <div class="badges-grid" style="margin-bottom: 20px;">
+    <h3><i class="fas fa-medal" style="color: #fbbf24;"></i> Mes Badges</h3>
+    <div class="badges-grid" style="margin-top: 20px;">
+        
+        <?php if (empty($mes_badges)): ?>
+            <p style="color: var(--text-muted); font-size: 14px;">Aucun badge pour le moment. Continuez vos efforts !</p>
+        <?php else: ?>
+            <?php foreach ($mes_badges as $badge): ?>
                 <div class="badge-box">
-                    <div class="b-icon blue"><i class="fas fa-users"></i></div>
+                    <div class="b-icon indigo"><i class="<?php echo htmlspecialchars($badge['image_badge']); ?>"></i></div>
                     <div class="b-details">
-                        <h4>Mentor Débutant</h4>
-                        <p>Aidez 5 étudiants avec succès</p>
+                        <h4><?php echo htmlspecialchars($badge['nom_badge']); ?></h4>
+                        <p><?php echo htmlspecialchars($badge['description_badge']); ?></p>
                     </div>
                 </div>
-                
-                <?php if ($countSkills >= 2): ?>
-                    <div class="badge-box">
-                        <div class="b-icon indigo"><i class="fas fa-graduation-cap"></i></div>
-                        <div class="b-details">
-                            <h4>SQL Master</h4>
-                            <p>Maîtrisez SQL avec expertise</p>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <div class="badge-box locked">
-                        <div class="b-icon gray"><i class="fas fa-lock"></i></div>
-                        <div class="b-details">
-                            <h4>SQL Master (Bloqué)</h4>
-                            <p>Validez au moins 2 compétences pour débloquer</p>
-                        </div>
-                        <i class="fas fa-lock lock-icon"></i>
-                    </div>
-                <?php endif; ?>
-            </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
 
-            <a href="creer_demande.php" class="btn-action-swap">
-                <i class="far fa-plus-square"></i> Créer une demande d'aide
-            </a>
-        </div>
-    </main>
+    </div>
+
+    <a href="creer_demande.php" class="btn-action-swap" style="margin-top: 20px;">
+        <i class="far fa-plus-square"></i> Créer une demande d'aide
+    </a>
+</div>
 
 </body>
 </html>

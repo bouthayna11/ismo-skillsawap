@@ -7,6 +7,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id   = $_SESSION['user_id'];
 $user_role = $_SESSION['user_role'];
+$statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
+$statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 
 try {
     $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE id_utilisateur = ?");
@@ -97,7 +99,8 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
         .menu-item  { display: flex; align-items: center; text-decoration: none; color: #cbd5e1; padding: 12px 16px; border-radius: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 500; }
         .menu-item i { margin-right: 12px; width: 20px; text-align: center; }
-        .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
+        .menu-item:hover, .menu-item.active { background: var(--primary); color: white;}
+        .notif-dot { background: var(--yellow); color: #d6b810; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto;}
 
         /* Main */
         .main  { flex: 1; padding: 40px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
@@ -172,6 +175,7 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
             .menu-item i { margin-right: 0; }
             .skills-grid, .badges-grid { grid-template-columns: 1fr; }
             .stats-grid, .stats-grid.cols-4 { grid-template-columns: 1fr 1fr; }
+            .notif-dot { display: none; }
         }
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -201,19 +205,21 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
             <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
         <?php endif; ?>
         <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
-
+        <?php if ($user_role === 'stagiaire'): ?>
+        <?php endif; ?>
         <p class="menu-title">COMPÉTENCES</p>
-        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
-        <a href="mentors.php"    class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
         <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
         <?php endif; ?>
-
-        <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
-        <p class="menu-title">ADMINISTRATION</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span></a>
-        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span></a>
-        <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_badges.php"        class="menu-item"><i class="fas fa-medal"></i> <span>Badges</span></a>
+        <?php if (in_array($user_role, ['admin', 'formateur'])): ?>
+        <p class="menu-title">CONTRÔLE</p>
+        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
+            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
+        </a>
+        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors </span>
+            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
+        </a>        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
+        <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide</span></a>
+        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i>    <span>Mentors</span></a>
         <?php endif; ?>
     </nav>
     <div style="margin-top:auto;">

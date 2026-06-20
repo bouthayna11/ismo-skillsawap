@@ -5,6 +5,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'formateur') {
     exit();
 }
 require_once 'config.php';
+$user_role = $_SESSION['user_role'];
+$statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
+$statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 $userId = $_SESSION['user_id'];
 $queryUser = $pdo->prepare("SELECT * FROM utilisateur WHERE id_utilisateur = ?");
 $queryUser->execute([$userId]);
@@ -44,6 +47,9 @@ $statGlobalValidated = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_v
 $stmtValid = $pdo->prepare("SELECT COUNT(*) FROM validation WHERE id_formateur = ? AND etat_validation = 'valide'");
 $stmtValid->execute([$userId]);
 $statMyValidations = $stmtValid->fetchColumn();
+$dashboard_link = "dashboard.php";
+if ($user_role === 'formateur')                                    { $dashboard_link = "dashboard_formateur.php"; }
+elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_link = "dashboard_admin.php"; }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -95,7 +101,7 @@ $statMyValidations = $stmtValid->fetchColumn();
         
         /* Layout Panels */
         .middle-row { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-        .section-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; margin-bottom: 10px; }
+        .section-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; margin-bottom: 1px; }
         .section-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         
         /* Tables & Lists */
@@ -138,17 +144,25 @@ $statMyValidations = $stmtValid->fetchColumn();
     <p class="menu-title">ACTIVITÉ</p>
     <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i> <span>Offres d'aide</span></a>
     <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
-
-    <p class="menu-title">COMPÉTENCES & MENTORS</p>
-    <a href="validation_competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Valider Compétences</span></a>
-    <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Validation Mentors</span></a>
-    <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+        <p class="menu-title">COMPÉTENCES</p>
+        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
+    <?php if (in_array($user_role, ['admin', 'formateur'])): ?>
+        <p class="menu-title">CONTRÔLE</p>
+        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
+            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
+        </a>
+        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors </span>
+            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
+        </a>
+        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
+        <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide</span></a>
+        <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i>    <span>Mentors</span></a>
+        <?php endif; ?>
 </nav>
         <div>
             <a href="logout.php" class="menu-item" style="color: #f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
         </div>
     </aside>
-
     <main class="main">
         <header>
             <div class="search-box">
@@ -216,12 +230,15 @@ $statMyValidations = $stmtValid->fetchColumn();
                     <span><span class="act-dot">•</span> 3 nouvelles demandes de validation de compétences en attente.</span>
                     <span class="act-time">il y a 10 min</span>
                 </div>
-            </div>o0
+            </div>
             
             <div class="section-card">
                 <h3>Actions rapides</h3>
                 <button class="btn-action-swap" onclick="window.location.href='competence.php'">
                     <i class="fas fa-check-circle"></i> Valider des compétences
+                </button>
+                 <button class="btn-action-swap" onclick="window.location.href='gestion_badges.php'">
+                    <i class="fas fa-check-circle"></i> Attribuer des badges
                 </button>
             </div>
         </div>

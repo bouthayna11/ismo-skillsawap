@@ -4,9 +4,10 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['formateu
     header("Location: dashboard.php");
     exit();
 }
-
+$user_role = $_SESSION['user_role'];
 require_once 'config.php';
-
+$statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
+$statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 $userId   = $_SESSION['user_id'];
 $userRole = $_SESSION['user_role'];
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = :id");
@@ -110,6 +111,8 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
         .menu-item  { display: flex; align-items: center; text-decoration: none; color: #cbd5e1; padding: 12px 16px; border-radius: 8px; margin-bottom: 4px; font-size: 14px; font-weight: 500; }
         .menu-item i { margin-right: 12px; width: 20px; text-align: center; }
         .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
+        .notif-dot { background: var(--yellow); color: #d6b810; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto;}
+
 
         /* Main */
         .main  { flex: 1; padding: 40px; overflow-y: auto; }
@@ -204,12 +207,33 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
     <p class="menu-title">GENERAL</p>
     <nav>
         <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php"                    class="menu-item"><i class="far fa-user"></i>      <span>Profil</span></a>
+        <a href="profil.php" class="menu-item "><i class="far fa-user"></i> <span>Profil</span></a>
 
-        <p class="menu-title">GESTION</p>
-        <a href="validation_competence.php" class="menu-item active"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span></a>
-        <a href="demandes_aide.php"         class="menu-item"><i class="far fa-question-circle"></i>        <span>Demandes d'aide</span></a>
-        <a href="mentors.php"               class="menu-item"><i class="fas fa-user-graduate"></i>          <span>Mentors</span></a>
+        <?php if (in_array($user_role, ['stagiaire', 'formateur'])): ?>
+        <p class="menu-title">ACTIVITÉ</p>
+        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i>
+            <span><?php echo $user_role === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
+        </a>
+        <?php if ($user_role === 'stagiaire'): ?>
+            <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
+        <?php endif; ?>
+        <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
+        <?php if ($user_role === 'stagiaire'): ?>
+        <?php endif; ?>
+        <p class="menu-title">COMPÉTENCES</p>
+        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
+        <?php endif; ?>
+        <?php if (in_array($user_role, ['admin', 'formateur'])): ?>
+        <p class="menu-title">CONTRÔLE</p>
+        <a href="validation_competence.php" class="menu-item active"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
+            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
+        </a>
+        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors </span>
+            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
+        </a>        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
+        <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide</span></a>
+        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i>    <span>Mentors</span></a>
+        <?php endif; ?>
     </nav>
     <div style="margin-top:auto;">
         <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
@@ -288,6 +312,7 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
                     $etat = $d['etat_validation'];
                     $stagInitials = strtoupper(substr($d['prenom_uti'], 0, 1) . substr($d['nom_uti'], 0, 1));
                     $etatLabels = ['en_attente' => '⏳ En attente', 'valide' => '✅ Validée', 'refuse' => '❌ Refusée'];
+                    
                 ?>
                 <tr class="demande-row"
                     data-name="<?php echo strtolower($d['prenom_uti'] . ' ' . $d['nom_uti']); ?>"
