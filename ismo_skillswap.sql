@@ -2,9 +2,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
--- --------------------------------------------------------
--- 1. جدول المستخدم (العام)
--- --------------------------------------------------------
 CREATE TABLE `utilisateur` (
   `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT,
   `nom_uti` varchar(50) DEFAULT NULL,
@@ -18,9 +15,6 @@ CREATE TABLE `utilisateur` (
   UNIQUE KEY `email_uti` (`email_uti`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 2. جدول الباسبور (خاصو يتصاوب قبل السطاجيير)
--- --------------------------------------------------------
 CREATE TABLE `passeport` (
   `id_passeport` int(11) NOT NULL AUTO_INCREMENT,
   `score_total` int(11) DEFAULT 0,
@@ -29,9 +23,6 @@ CREATE TABLE `passeport` (
   PRIMARY KEY (`id_passeport`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 3. جدول السطاجيير (وارث من utilisateur)
--- --------------------------------------------------------
 CREATE TABLE `stagiaire` (
   `id_utilisateur` int(11) NOT NULL,
   `cef` varchar(50) DEFAULT NULL,
@@ -46,9 +37,6 @@ CREATE TABLE `stagiaire` (
   CONSTRAINT `stagiaire_ibfk_2` FOREIGN KEY (`id_passeport`) REFERENCES `passeport` (`id_passeport`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 4. جدول الفورماتور (وارث من utilisateur)
--- --------------------------------------------------------
 CREATE TABLE `formateur` (
   `id_utilisateur` int(11) NOT NULL,
   `matricule_rh` varchar(50) DEFAULT NULL,
@@ -57,9 +45,6 @@ CREATE TABLE `formateur` (
   CONSTRAINT `formateur_ibfk_1` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateur` (`id_utilisateur`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 5. جدول الأدمن (وارث من utilisateur)
--- --------------------------------------------------------
 CREATE TABLE `administrateur` (
   `id_utilisateur` int(11) NOT NULL,
   `cle_securite` varchar(100) DEFAULT NULL,
@@ -67,9 +52,6 @@ CREATE TABLE `administrateur` (
   CONSTRAINT `administrateur_ibfk_1` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateur` (`id_utilisateur`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 6. جدول الكفاءات
--- --------------------------------------------------------
 CREATE TABLE `competence` (
   `id_comp` int(11) NOT NULL AUTO_INCREMENT,
   `nom_comp` varchar(100) DEFAULT NULL,
@@ -77,9 +59,6 @@ CREATE TABLE `competence` (
   PRIMARY KEY (`id_comp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 7. جدول طلبات المساعدة
--- --------------------------------------------------------
 CREATE TABLE `demande_aide` (
   `id_demande` int(11) NOT NULL AUTO_INCREMENT,
   `titre` varchar(100) DEFAULT NULL,
@@ -92,7 +71,6 @@ CREATE TABLE `demande_aide` (
   CONSTRAINT `demande_aide_ibfk_1` FOREIGN KEY (`id_stagiaire`) REFERENCES `stagiaire` (`id_utilisateur`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-------------------
 CREATE TABLE `entraide` (
   `id_entraide` int(11) NOT NULL AUTO_INCREMENT,
   `id_demande` int(11) NOT NULL, -- الربط مع الطلب الأصلي
@@ -103,9 +81,7 @@ CREATE TABLE `entraide` (
   CONSTRAINT `fk_entraide_demande` FOREIGN KEY (`id_demande`) REFERENCES `demande_aide` (`id_demande`) ON DELETE CASCADE,
   CONSTRAINT `fk_entraide_mentor` FOREIGN KEY (`id_mentor`) REFERENCES `utilisateur` (`id_utilisateur`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- --------------------------------------------------------
--- 8. جدول عروض المساعدة (Les offres)
--- --------------------------------------------------------
+
 CREATE TABLE `proposer_aide` (
   `id_proposition` int(11) NOT NULL AUTO_INCREMENT,
   `message_aide` text DEFAULT NULL,
@@ -120,9 +96,7 @@ CREATE TABLE `proposer_aide` (
   CONSTRAINT `proposer_aide_ibfk_2` FOREIGN KEY (`id_demande`) REFERENCES `demande_aide` (`id_demande`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 9. جدول التقييم (الربط مع الطلب)
--- --------------------------------------------------------
+
 CREATE TABLE `notation` (
   `id_note` int(11) NOT NULL AUTO_INCREMENT,
   `score` int(11) DEFAULT NULL,
@@ -139,9 +113,7 @@ CREATE TABLE `notation` (
   CONSTRAINT `notation_ibfk_3` FOREIGN KEY (`id_demande`) REFERENCES `demande_aide` (`id_demande`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 10. جدول الشارات (Badges)
--- --------------------------------------------------------
+
 CREATE TABLE `badges` (
   `id_badge` int(11) NOT NULL AUTO_INCREMENT,
   `nom_badge` varchar(50) DEFAULT NULL,
@@ -150,9 +122,7 @@ CREATE TABLE `badges` (
   PRIMARY KEY (`id_badge`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
--- 11. جداول الربط (Maitriser / Obtenir / Validation)
--- --------------------------------------------------------
+
 CREATE TABLE `maitriser` (
   `id_utilisateur` int(11) NOT NULL,
   `id_comp` int(11) NOT NULL,
