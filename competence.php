@@ -1,46 +1,52 @@
 <?php
 session_start();
-// Vérification de la session : rediriger vers login si non connecté
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+
 include('config.php');
+
 $userId   = $_SESSION['user_id'];
 $userRole = $_SESSION['user_role'];
-// Récupération des infos de l'utilisateur pour l'avatar
+
+// جلب معلومات المستخدم
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = :id");
 $queryUser->execute(['id' => $userId]);
 $user     = $queryUser->fetch();
 $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
-// Gestion dynamique du lien du Dashboard selon le rôle
+
 $dashboard_link = "dashboard.php";
-if ($userRole === 'formateur'){ $dashboard_link = "dashboard_formateur.php"; }
-elseif ($userRole === 'administrateur'){ $dashboard_link = "dashboard_admin.php"; }
+if ($userRole === 'formateur')                                   { $dashboard_link = "dashboard_formateur.php"; }
+elseif ($userRole === 'administrateur' || $userRole === 'admin') { $dashboard_link = "dashboard_admin.php"; }
+
 $success_msg = '';
 $error_msg   = '';
-// Traitement de la demande de validation d'une nouvelle compétence
+
+// =====================================================================
+// معالجة إرسال طلب validation كومبيتانس جديدة
+// =====================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_demande'])) {
     $id_comp = (int) $_POST['id_comp'];
+
     if ($id_comp > 0) {
-        // Vérification : éviter les doublons de demandes en attente
-        $smt = $pdo->prepare(
+        // تحقق: واش ماعندوش طلب pending على نفس الكومبيتانس
+        $chkPending = $pdo->prepare(
             "SELECT COUNT(*) FROM validation WHERE id_stagiaire = :u AND id_comp = :c AND etat_validation = 'en_attente'"
         );
-        $smt->execute(['u' => $userId, 'c' => $id_comp]);
+        $chkPending->execute(['u' => $userId, 'c' => $id_comp]);
 
-        // Vérification : vérifier si la compétence est déjà acquise
+        // تحقق: واش ماعندوش هاد الكومبيتانس بالفعل فـ maitriser
         $chkMaitriser = $pdo->prepare(
             "SELECT COUNT(*) FROM maitriser WHERE id_utilisateur = :u AND id_comp = :c"
         );
         $chkMaitriser->execute(['u' => $userId, 'c' => $id_comp]);
 
-        if ($smt->fetchColumn() > 0) {
+        if ($chkPending->fetchColumn() > 0) {
             $error_msg = "Vous avez déjà une demande en attente pour cette compétence.";
         } elseif ($chkMaitriser->fetchColumn() > 0) {
             $error_msg = "Vous maîtrisez déjà cette compétence.";
         } else {
-            // Insertion de la nouvelle demande
             $ins = $pdo->prepare(
                 "INSERT INTO validation (date_validation, etat_validation, id_comp, id_stagiaire) 
                  VALUES (CURDATE(), 'en_attente', :c, :u)"
@@ -49,10 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_demande'])) {
             $success_msg = "Demande envoyée ! En attente de validation par le formateur.";
         }
     } else {
-        $error_msg = "Veuillez sélectionner une compétence valide.";
+        $error_msg = "Veuillez sélectionner une compétence.";
     }
 }
-// Récupération des compétences validées de l'utilisateur
+
+// =====================================================================
+// جلب الكومبيتانس المقبولة ديال هاد الستاجير (من maitriser)
+// =====================================================================
 $stmtMaitriser = $pdo->prepare(
     "SELECT m.id_comp, m.niveau_estime, c.nom_comp, c.categorie
      FROM maitriser m
@@ -63,7 +72,9 @@ $stmtMaitriser = $pdo->prepare(
 $stmtMaitriser->execute(['u' => $userId]);
 $mes_competences = $stmtMaitriser->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupération des demandes en cours (en attente ou refusées)
+// =====================================================================
+// جلب الطلبات المعلقة (en_attente) والمرفوضة (refuse)
+// =====================================================================
 $stmtPending = $pdo->prepare(
     "SELECT v.id_validation, v.etat_validation, v.date_validation, c.nom_comp, c.categorie, c.id_comp
      FROM validation v
@@ -74,7 +85,9 @@ $stmtPending = $pdo->prepare(
 $stmtPending->execute(['u' => $userId]);
 $demandes = $stmtPending->fetchAll(PDO::FETCH_ASSOC);
 
-// Filtrage des compétences disponibles pour une nouvelle demande
+// =====================================================================
+// جلب كاع الكومبيتانس المتاحة (اللي ما طلبهاش وما عندوش)
+// =====================================================================
 $myCompIds     = array_column($mes_competences, 'id_comp');
 $pendingIds    = array_column($demandes, 'id_comp');
 $excludeIds    = array_unique(array_merge($myCompIds, $pendingIds));
@@ -82,7 +95,7 @@ $excludeIds    = array_unique(array_merge($myCompIds, $pendingIds));
 $allComps = $pdo->query("SELECT id_comp, nom_comp, categorie FROM competence ORDER BY categorie, nom_comp")->fetchAll(PDO::FETCH_ASSOC);
 $available = array_filter($allComps, fn($c) => !in_array($c['id_comp'], $excludeIds));
 
-// Organisation des compétences par catégorie pour l'affichage
+// تجميع الكومبيتانس حسب الكاتيكوري
 $by_category = [];
 foreach ($mes_competences as $comp) {
     $by_category[$comp['categorie'] ?? 'Général'][] = $comp;
