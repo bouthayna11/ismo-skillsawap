@@ -116,7 +116,7 @@ foreach ($all_mentors as $m) {
             --green:         #22c55e;
             --red:           #ef4444;
         }
-
+        
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
@@ -249,10 +249,9 @@ foreach ($all_mentors as $m) {
             <p class="menu-title">ADMIN</p>
             <a href="admin.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Admin</span></a>
         <?php endif; ?>
+                    <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div style="margin-top:auto;">
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
 
 <main class="main">
@@ -464,7 +463,7 @@ foreach ($all_mentors as $m) {
             const matchSkill = !skillVal || skills.includes(skillVal);
             card.style.display = (matchName && matchSkill) ? "flex" : "none";
         });
-    }
+    
 
     searchInput.addEventListener("keyup", filterMentors);
     skillFilter.addEventListener("change", filterMentors);

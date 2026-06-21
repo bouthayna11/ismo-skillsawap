@@ -91,9 +91,9 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sidebar-bg:    #1e293b;
-            --primary:       #6366f1;
-            --primary-hover: #4f46e5;
+            --sidebar-bg: #430b54; 
+            --primary: #df64d4; 
+            --primary-hover: #8447ac;
             --main-bg:       #f8fafc;
             --border:        #e2e8f0;
             --text-main:     #1e293b;
@@ -102,7 +102,6 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
             --red:           #ef4444;
             --yellow:        #f59e0b;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 

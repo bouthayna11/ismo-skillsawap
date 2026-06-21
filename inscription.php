@@ -70,6 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 header('Location: login.php');
                 exit();
+$query_filiere = $pdo->query("SELECT DISTINCT categorie FROM competence"); 
+$listes_filieres = $query_filiere->fetchAll(PDO::FETCH_ASSOC);
             }
         } catch (Exception $e) {
             $errors['database'] = "Erreur d'inscription : " . $e->getMessage();
@@ -135,6 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <option value="Digital Development">Digital Development</option>
                         <option value="Infrastructure Digitale">Infrastructure Digitale</option>
                         <option value="Gestion des Entreprises">Gestion des Entreprises</option>
+                        <option value="Infographie">Infographie</option>
+                        <option value="Intelligence Artificielle">Intelligence Artificielle - IA</option>
                     </select>
                 </div>
 
