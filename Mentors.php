@@ -464,7 +464,7 @@ foreach ($all_mentors as $m) {
             card.style.display = (matchName && matchSkill) ? "flex" : "none";
         });
     
-
+                }
     searchInput.addEventListener("keyup", filterMentors);
     skillFilter.addEventListener("change", filterMentors);
 </script>
