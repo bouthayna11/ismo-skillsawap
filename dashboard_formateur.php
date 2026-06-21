@@ -39,9 +39,7 @@ $queryRequests = $pdo->query(
      FROM demande_mentorat d
      INNER JOIN utilisateur u ON d.id_stagiaire = u.id_utilisateur
      INNER JOIN stagiaire s ON u.id_utilisateur = s.id_utilisateur
-     WHERE d.statut = 'en_attente' AND d.message_demande IS NULL"
-);
-$mentor_requests = $queryRequests->fetchAll(PDO::FETCH_ASSOC);
+     WHERE d.statut = 'en_attente' AND d.message_demande IS NULL");
 $mentor_requests = $queryRequests->fetchAll(PDO::FETCH_ASSOC);
 $statGlobalValidated = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'valide'")->fetchColumn();
 $stmtValid = $pdo->prepare("SELECT COUNT(*) FROM validation WHERE id_formateur = ? AND etat_validation = 'valide'");

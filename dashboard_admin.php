@@ -224,7 +224,7 @@ $lastDemandes = $pdo->query(
         </a>
          <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
-        <a href="gestion_categories.php"  class="menu-item"><i class="fas fa-tags"></i> <span>Gestion des categories</span></a>
+        <a href="gestion_categories.php"  class="menu-item"><i class="fas fa-tags"></i> <span>Gestion des catégories</span></a>
         <p class="menu-title">GENERAL</p>
         <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i><span>Mentors</span></a>
          <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide creer</span></a>

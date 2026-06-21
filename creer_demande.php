@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $technologie = trim($_POST['competence']);
     $niveau = trim($_POST['niveau']);
     if (!empty($titre) && !empty($description) && !empty($technologie) && !empty($niveau)) {
-        $sql = "INSERT INTO demande_aide (Titre, description, technologie, niveau, filiere, id_stagiaire) 
+        $sql = "INSERT INTO demande_aide (titre, description, technologie, niveau, filiere, id_stagiaire) 
                 VALUES (?,?,?,?,?,?)";
         $stmt = $pdo->prepare($sql);
         $result = $stmt->execute([ $titre, $description,$technologie, $niveau,$filiere, $_SESSION['user_id']]);
@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 $dashboard_link = "dashboard.php"; 
 if ($_SESSION['user_role']=== 'formateur') { $dashboard_link = "dashboard_formateur.php"; }
-elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboard_admin.php"; }
+elseif ($_SESSION['user_role']=== 'admin') { $dashboard_link = "dashboard_admin.php"; }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
