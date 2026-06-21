@@ -67,6 +67,28 @@ $badges = $pdo->prepare("SELECT b.nom_badge, b.description_badge, b.image_badge
     WHERE o.id_utilisateur = ?");
 $badges->execute([$user_id]);
 $mes_badges = $badges->fetchAll(PDO::FETCH_ASSOC);
+$queryMentors = $pdo->query(
+    "SELECT u.id_utilisateur, u.nom_uti, u.prenom_uti, s.score_global
+     FROM utilisateur u
+     INNER JOIN stagiaire s ON u.id_utilisateur = s.id_utilisateur
+     INNER JOIN demande_mentorat d ON s.id_utilisateur = d.id_stagiaire
+     WHERE d.statut = 'valide'
+     GROUP BY u.id_utilisateur
+     ORDER BY s.score_global DESC"
+);
+$all_mentors = $queryMentors->fetchAll(PDO::FETCH_ASSOC);
+
+// جلب الكومبيتانس ديال كل منتور من maitriser + competence
+$mentor_skills = [];
+foreach ($all_mentors as $m) {
+    $stmtSkills = $pdo->prepare(
+        "SELECT c.nom_comp FROM maitriser ma
+         JOIN competence c ON ma.id_comp = c.id_comp
+         WHERE ma.id_utilisateur = :id LIMIT 4"
+    );
+    $stmtSkills->execute(['id' => $m['id_utilisateur']]);
+    $mentor_skills[$m['id_utilisateur']] = $stmtSkills->fetchAll(PDO::FETCH_COLUMN);
+}
 } catch (Exception $e) {
     echo "<div style='color:red;'>Erreur en connexion avec les donnes de base donne: " . $e->getMessage() . "</div>";
 }
@@ -126,11 +148,22 @@ $mes_badges = $badges->fetchAll(PDO::FETCH_ASSOC);
         .middle-row { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
         .section-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; height: 100%; }
         .section-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-
+                .side-content { display: flex; flex-direction: column; gap: 20px; }
+        .side-card    { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; }
+        .side-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
         .act-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
         .act-item:last-child { border-bottom: none; }
         .act-dot { color: var(--primary); margin-right: 10px; font-size: 8px; }
         .act-time { color: var(--text-muted); font-size: 13px; }
+        
+        .ranking-list { display: flex; flex-direction: column; gap: 10px; }
+        .ranking-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; }
+        .rank-number  { width: 26px; height: 26px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+        .rank-number.gold   { background: #fbbf24; }
+        .rank-number.silver { background: #94a3b8; }
+        .rank-number.bronze { background: #b45309; }
+        .rank-info h4 { font-size: 13px; font-weight: 600; }
+        .rank-info p  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
         .mentor-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
         .mentor-item:last-child { border-bottom: none; }
@@ -248,26 +281,27 @@ $mes_badges = $badges->fetchAll(PDO::FETCH_ASSOC);
                 <?php endif; ?>
             </div>
 
-            <div class="section-card">
-                <h3><i class="fas fa-trophy" style="color: #fbbf24;"></i> Top Mentors</h3>
-                <div class="mentor-item">
-                    <span class="rank">1</span>
-                    <div class="m-avatar">SM</div>
-                    <div class="m-info">
-                        <h4>Sophie Martin</h4>
-                        <p>⭐ 5.0 • 87 aides</p>
+            <div class="side-card">
+                <h3><i class="fas fa-trophy" style="color:#fbbf24; margin-right:8px;"></i>Top Mentors XP</h3>
+                <div class="ranking-list">
+                    <?php
+                    $top = array_slice($all_mentors, 0, 3);
+                    $rankClasses = ['gold', 'silver', 'bronze'];
+                    foreach ($top as $i => $tm):
+                    ?>
+                    <div class="ranking-item">
+                        <div class="rank-number <?php echo $rankClasses[$i]; ?>"><?php echo $i + 1; ?></div>
+                        <div class="rank-info">
+                            <h4><?php echo htmlspecialchars($tm['prenom_uti'] . ' ' . $tm['nom_uti']); ?></h4>
+                            <p><?php echo $tm['score_global'] ?? 0; ?> XP</p>
+                        </div>
                     </div>
-                </div>
-                <div class="mentor-item">
-                    <span class="rank">2</span>
-                    <div class="m-avatar">MD</div>
-                    <div class="m-info">
-                        <h4>Marc Dubois</h4>
-                        <p>⭐ 4.9 • 72 aides</p>
-                    </div>
+                    <?php endforeach; ?>
+                    <?php if (empty($top)): ?>
+                        <p style="font-size:13px; color:var(--text-muted); text-align:center;">Aucun mentor pour le moment.</p>
+                    <?php endif; ?>
                 </div>
             </div>
-        </div>
 
         <div class="section-card">
     <h3><i class="fas fa-medal" style="color: #fbbf24;"></i> Mes Badges</h3>

@@ -13,7 +13,14 @@ $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id
 $queryUser->execute([$userId]);
 $user     = $queryUser->fetch();
 $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
-
+// Determine la classe dyal le theme b-hssab le rôle
+// Determine la classe dyal le theme b-hssab le rôle
+$themeClass = 'theme-stagiaire';
+if (in_array($userRole, ['admin', 'administrateur'])) {
+    $themeClass = 'theme-admin';
+} elseif ($userRole === 'formateur') {
+    $themeClass = 'theme-formateur';
+}
 $dashboard_link = "dashboard.php";
 if ($userRole === 'formateur')                            { $dashboard_link = "dashboard_formateur.php"; }
 elseif (in_array($userRole, ['admin', 'administrateur'])) { $dashboard_link = "dashboard_admin.php"; }
@@ -39,7 +46,7 @@ $stagiaires = $pdo->query(
      GROUP BY u.id_utilisateur
      ORDER BY s.score_global DESC"
 )->fetchAll(PDO::FETCH_ASSOC);
-
+// جلب الشعب من جدول المهارات لأنك ديجا معمره بالبيانات
 // الديماندات
 $demandes = $pdo->query(
     "SELECT d.id_demande, d.Titre AS titre, d.description, d.technologie, d.niveau, d.filiere, d.statut,
@@ -50,7 +57,7 @@ $demandes = $pdo->query(
 )->fetchAll(PDO::FETCH_ASSOC);
 
 // الفيلييرات والكومبيتانس
-$filieres    = $pdo->query("SELECT DISTINCT filiere FROM stagiaire WHERE filiere IS NOT NULL AND filiere != '' ORDER BY filiere")->fetchAll(PDO::FETCH_COLUMN);
+$filieres = $pdo->query("SELECT DISTINCT categorie FROM competence WHERE categorie IS NOT NULL ORDER BY categorie")->fetchAll(PDO::FETCH_COLUMN);
 $competences = $pdo->query("SELECT DISTINCT nom_comp FROM competence ORDER BY nom_comp")->fetchAll(PDO::FETCH_COLUMN);
 
 // تحويل لـ JSON
@@ -103,7 +110,28 @@ $demandesJSON = json_encode(array_map(function($d) {
             --green:         #22c55e;
             --yellow:        #f59e0b;
         }
-
+               .theme_formateur {
+    --sidebar-bg: #430b54; 
+    --primary: #df64d4; 
+    --primary-hover: #8447ac;
+    --main-bg: #f8fafc; 
+    --border: #e2e8f0; 
+    --text-main: #1e293b; 
+    --text-muted: #64748b; 
+    --green: #10b981; /* Was success */
+    --red: #ef4444;   /* Was danger */
+}
+    .theme-admin{
+     --sidebar-bg: #0c540b; 
+    --primary: #198218; 
+    --primary-hover: #1595b6;
+    --main-bg: #f8fafc; 
+    --border: #e2e8f0; 
+    --text-main: #1e293b; 
+    --text-muted: #64748b; 
+    --green: #10b981; /* Was success */
+    --red: #ef4444;   /* Was danger */
+}
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
@@ -223,7 +251,7 @@ $demandesJSON = json_encode(array_map(function($d) {
         }
     </style>
 </head>
-<body>
+<body class="<?php echo $themeClass; ?>">
 
 <aside class="sidebar">
     <h1>ISMO SkillSwap</h1>
@@ -248,10 +276,9 @@ $demandesJSON = json_encode(array_map(function($d) {
         <p class="menu-title">ADMIN</p>
         <a href="dashboard_admin.php" class="menu-item"><i class="fas fa-user-shield"></i>  <span>Admin</span></a>
         <?php endif; ?>
+        <p class="menu-title" >COMPTE</p>
+       <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div style="margin-top:auto;">
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
 
 <main class="main">

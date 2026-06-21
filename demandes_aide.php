@@ -34,13 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_supprimer'])) 
 $dashboard_link = "dashboard.php";
 if ($userRole === 'formateur'){ $dashboard_link = "dashboard_formateur.php"; }
 elseif ($userRole === 'admin') { $dashboard_link = "dashboard_admin.php"; }
+// Determine la classe dyal le theme b-hssab le rôle
+$themeClass = ($userRole === 'formateur' || in_array($userRole, ['admin', 'administrateur'])) ? 'theme-staff' : 'theme-stagiaire';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reponse_new'])) {
     extract($_POST);
     $id_demande = (int) $iddem;
     $message= trim($message);
     if (!empty($message)) {
         //henia kanjibo  lid dyal had stagiare b id dyal demandes bash mankhaliwahshi yjaweb ela rasso
-        $checkOwner = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande = :id");
+        $checkOwner = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande =?");
         $checkOwner->execute([$id_demande]);
         $ownerId = $checkOwner->fetchColumn();
         // ila kan kaykhalef lajawab li kaytsardlo kanzidouh f reponses_aide b condition:
@@ -109,7 +111,28 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
             --yellow-bg: #fefce8;
             --yellow-border: #fde047;
         }
-
+               .theme-formateur {
+    --sidebar-bg: #430b54; 
+    --primary: #df64d4; 
+    --primary-hover: #8447ac;
+    --main-bg: #f8fafc; 
+    --border: #e2e8f0; 
+    --text-main: #1e293b; 
+    --text-muted: #64748b; 
+    --green: #10b981; /* Was success */
+    --red: #ef4444;   /* Was danger */
+}
+.theme-admin{
+     --sidebar-bg: #0c540b; 
+    --primary: #198218; 
+    --primary-hover: #1595b6;
+    --main-bg: #f8fafc; 
+    --border: #e2e8f0; 
+    --text-main: #1e293b; 
+    --text-muted: #64748b; 
+    --green: #10b981; /* Was success */
+    --red: #ef4444;   /* Was danger */
+}
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
@@ -179,7 +202,8 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 
-<body>
+<body class="<?php echo $themeClass; ?>">
+
 
     <aside class="sidebar">
         <h1>ISMO SkillSwap</h1>
@@ -204,10 +228,9 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
             <a href="./competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
             <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
             <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
+            <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
         </nav>
-        <div style="margin-top:auto;">
-            <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-        </div>
     </aside>
 
     <main class="main">
@@ -256,16 +279,17 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
     
     <div style="display: flex; align-items: center; gap: 10px;">
         <!-- زر الحذف -->
-        <?php if ($userRole === 'admin'): ?>
-            <form method="POST" action="demandes_aide.php" style="margin:0;">
-                <input type="hidden" name="action_supprimer" value="1">
-                <input type="hidden" name="iddem" value="<?php echo $d['id_demande']; ?>">
-                <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?')" 
-                        style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px;" title="Supprimer">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </form>
-        <?php endif; ?>
+         <!-- Badal had l-partie -->
+<?php if ($isOwner || $userRole === 'admin' || $userRole === 'formateur'): ?>
+    <form method="POST" action="demandes_aide.php" style="margin:0;">
+        <input type="hidden" name="action_supprimer" value="1">
+        <input type="hidden" name="iddem" value="<?php echo $d['id_demande']; ?>">
+        <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?')" 
+                style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px;" title="Supprimer">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+    </form>
+<?php endif; ?>
         
         <span class="badge badge-tech"><?php echo htmlspecialchars($d['technologie'] ?? ''); ?></span>
     </div>

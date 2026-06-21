@@ -17,6 +17,8 @@ $filiere = $_SESSION['user_filiere'] ?? "Développement Digital";
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");
 $queryUser->execute([$_SESSION['user_id']]);
 $user = $queryUser->fetch();
+$stmt_skills = $pdo->query("SELECT nom_comp FROM competence");
+$skills_list = $stmt_skills->fetchAll(PDO::FETCH_COLUMN);
 $nom_complet = $user ? htmlspecialchars($user['prenom_uti'] . ' ' . $user['nom_uti']) : "Stagiaire";
 $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -25,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $technologie = trim($_POST['competence']);
     $niveau = trim($_POST['niveau']);
     if (!empty($titre) && !empty($description) && !empty($technologie) && !empty($niveau)) {
-        $sql = "INSERT INTO demande_aide (titre, description, technologie, niveau, filiere, id_stagiaire) 
+        $sql = "INSERT INTO demande_aide (Titre, description, technologie, niveau, filiere, id_stagiaire) 
                 VALUES (?,?,?,?,?,?)";
         $stmt = $pdo->prepare($sql);
         $result = $stmt->execute([ $titre, $description,$technologie, $niveau,$filiere, $_SESSION['user_id']]);
@@ -41,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 $dashboard_link = "dashboard.php"; 
 if ($_SESSION['user_role']=== 'formateur') { $dashboard_link = "dashboard_formateur.php"; }
-elseif ($_SESSION['user_role']=== 'admin') { $dashboard_link = "dashboard_admin.php"; }
+elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboard_admin.php"; }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -136,10 +138,9 @@ elseif ($_SESSION['user_role']=== 'admin') { $dashboard_link = "dashboard_admin.
             <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
             <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
             <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
+                        <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
         </nav>
-        <div style="margin-top: auto;">
-            <a href="logout.php" class="menu-item" style="color: #f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-        </div>
     </aside>
 
     <main class="main">
@@ -191,20 +192,27 @@ elseif ($_SESSION['user_role']=== 'admin') { $dashboard_link = "dashboard_admin.
         </div>
     </main>
 
-    <script>
-        const competences = ["HTML", "CSS", "JavaScript", "PHP", "MySQL", "React"];
-        const niveaux = ["Débutant", "Intermédiaire", "Avancé"];
+<script>
+    // جلب المهارات من PHP وتحويلها لمصفوفة JavaScript
+    const competences = <?php echo json_encode($skills_list); ?>;
+    const niveaux = ["Débutant", "Intermédiaire", "Avancé"];
 
-        const competenceSelect = document.getElementById("competence");
-        const niveauSelect = document.getElementById("niveau");
+    const competenceSelect = document.getElementById("competence");
+    const niveauSelect = document.getElementById("niveau");
 
-        competences.forEach(function (skill) {
-            competenceSelect.innerHTML += `<option value="${skill}">${skill}</option>`;
-        });
+    competences.forEach(function (skill) {
+        let option = document.createElement("option");
+        option.value = skill;
+        option.text = skill;
+        competenceSelect.appendChild(option);
+    });
 
-        niveaux.forEach(function (level) {
-            niveauSelect.innerHTML += `<option value="${level}">${level}</option>`;
-        });
-    </script>
+    niveaux.forEach(function (level) {
+        let option = document.createElement("option");
+        option.value = level;
+        option.text = level;
+        niveauSelect.appendChild(option);
+    });
+</script>
 </body>
 </html>

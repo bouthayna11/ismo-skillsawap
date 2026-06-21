@@ -231,10 +231,9 @@ foreach ($mes_competences as $comp) {
         <a href="competence.php"    class="menu-item active"><i class="fas fa-award"></i>    <span>Compétences</span></a>
         <a href="mentors.php"       class="menu-item"><i class="fas fa-user-graduate"></i>   <span>Mentors</span></a>
         <a href="passport.php"      class="menu-item"><i class="fas fa-id-card"></i>         <span>Passeport</span></a>
+                    <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div style="margin-top:auto;">
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
 
 <main class="main">
@@ -362,7 +361,7 @@ foreach ($mes_competences as $comp) {
                                     echo '<optgroup label="' . htmlspecialchars($cat) . '">';
                                     $lastCat = $cat;
                                 }
-                            ?>
+                            ?><!--henia kanaffichiw isxm d competnece -->
                                 <option value="<?php echo (int)$c['id_comp']; ?>"><?php echo htmlspecialchars($c['nom_comp']); ?></option>
                             <?php endforeach; if ($lastCat !== '') echo '</optgroup>'; ?>
                         </select>

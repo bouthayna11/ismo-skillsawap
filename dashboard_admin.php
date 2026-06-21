@@ -61,9 +61,9 @@ $lastDemandes = $pdo->query(
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
          :root { 
-            --sidebar-bg: #1e293b; 
-            --primary: #4f46e5; 
-            --primary-hover: #3730a3;
+           --sidebar-bg: #0c540b;  
+           --primary: #198218; 
+            --primary-hover: #1595b6;
             --main-bg: #f8fafc; 
             --border: #e2e8f0; 
             --text-main: #1e293b; 
@@ -71,7 +71,7 @@ $lastDemandes = $pdo->query(
             --success: #10b981;
             --danger: #ef4444;
         }
-
+        
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
@@ -224,7 +224,7 @@ $lastDemandes = $pdo->query(
         </a>
          <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
-        <a href="gestion_categories.php"  class="menu-item"><i class="fas fa-tags"></i> <span>Gestion des catégories</span></a>
+        <a href="gestion_categories.php"  class="menu-item"><i class="fas fa-tags"></i> <span>Gestion des categories</span></a>
         <p class="menu-title">GENERAL</p>
         <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i><span>Mentors</span></a>
          <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide creer</span></a>

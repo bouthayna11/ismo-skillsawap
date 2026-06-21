@@ -59,11 +59,24 @@ try {
         $total_valide   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'valide'")->fetchColumn();
         $total_mentors  = $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'valide'")->fetchColumn();
     }
+    //henia kanjibo lbadgat li eandoo li tetawlo mn eand admin wla formateur
+$badges = $pdo->prepare("SELECT b.nom_badge, b.description_badge, b.image_badge 
+    FROM badges b
+    JOIN obtenir o ON b.id_badge = o.id_badge
+    WHERE o.id_utilisateur = ?");
+$badges->execute([$user_id]);
+$mes_badges = $badges->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (Exception $e) {
     die("Erreur : " . $e->getMessage());
 }
-
+// Determine la classe dyal le theme b-hssab le rôle
+$themeClass = 'theme-stagiaire';
+if (in_array($user_role, ['admin', 'administrateur'])) {
+    $themeClass = 'theme-admin';
+} elseif ($user_role === 'formateur') {
+    $themeClass = 'theme-formateur';
+}
 $dashboard_link = "dashboard.php";
 if ($user_role === 'formateur')                                    { $dashboard_link = "dashboard_formateur.php"; }
 elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_link = "dashboard_admin.php"; }
@@ -89,7 +102,28 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
             --purple:     #a855f7;
             --yellow:     #f59e0b;
         }
-
+        .theme-formateur {
+    --sidebar-bg: #430b54; 
+    --primary: #df64d4; 
+    --primary-hover: #8447ac;
+    --main-bg: #f8fafc; 
+    --border: #e2e8f0; 
+    --text-main: #1e293b; 
+    --text-muted: #64748b; 
+    --green: #10b981; /* Was success */
+    --red: #ef4444;   /* Was danger */
+}
+ .theme-admin{
+     --sidebar-bg: #0c540b; 
+    --primary: #198218; 
+    --primary-hover: #1595b6;
+    --main-bg: #f8fafc; 
+    --border: #e2e8f0; 
+    --text-main: #1e293b; 
+    --text-muted: #64748b; 
+    --green: #10b981; /* Was success */
+    --red: #ef4444;   /* Was danger */
+}
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
@@ -187,7 +221,7 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         }
     </style>
 </head>
-<body>
+<body class="<?php echo $themeClass; ?>">
 
 <aside class="sidebar">
     <h1>ISMO SkillSwap</h1>
@@ -206,12 +240,15 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         <?php endif; ?>
         <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
         <?php if ($user_role === 'stagiaire'): ?>
+        
         <?php endif; ?>
         <p class="menu-title">COMPÉTENCES</p>
+        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
+        <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i>    <span>Mentors</span></a>
         <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
         <?php endif; ?>
         <?php if (in_array($user_role, ['admin', 'formateur'])): ?>
-        <p class="menu-title">CONTRÔLE</p>
+        <p class="menu-title">sONTRÔLE</p>
         <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
             <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
         </a>
@@ -226,7 +263,8 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
             <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
             <?php endif; ?>
         </nav>
-    <div style="margin-top:auto;">
+    <div>
+        <p class="menu-title">COMPTE</p>
         <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </div>
 </aside>
@@ -328,22 +366,25 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
                 <?php endif; ?>
             </div>
         </div>
+                <div class="section-card">
+    <h3><i class="fas fa-medal" style="color: #fbbf24;"></i> Mes Badges</h3>
+    <div class="badges-grid" style="margin-top: 20px;">
+        
+        <?php if (empty($mes_badges)): ?>
+            <p style="color: var(--text-muted); font-size: 14px;">Aucun badge pour le moment. Continuez vos efforts !</p>
+        <?php else: ?>
+            <?php foreach ($mes_badges as $badge): ?>
+                <div class="badge-box">
+                    <div class="b-icon indigo"><i class="<?php echo htmlspecialchars($badge['image_badge']); ?>"></i></div>
+                    <div class="b-details">
+                        <h4><?php echo htmlspecialchars($badge['nom_badge']); ?></h4>
+                        <p><?php echo htmlspecialchars($badge['description_badge']); ?></p>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
 
-        <div class="section-card">
-            <h3>Badges et réalisations</h3>
-            <div class="badges-grid">
-                <div class="badge-box <?php echo $aides_completees >= 1 ? '' : 'locked'; ?>">
-                    <div class="b-icon blue"><i class="fas fa-users"></i></div>
-                    <div class="b-details"><h4>Premier Pas</h4><p>Réalisez votre première aide</p></div>
-                    <?php if ($aides_completees < 1): ?><i class="fas fa-lock" style="margin-left:auto; color:#cbd5e1;"></i><?php endif; ?>
-                </div>
-                <div class="badge-box <?php echo $aides_completees >= 5 ? '' : 'locked'; ?>">
-                    <div class="b-icon indigo"><i class="fas fa-award"></i></div>
-                    <div class="b-details"><h4>Mentor Actif</h4><p>Aidez 5 étudiants</p></div>
-                    <?php if ($aides_completees < 5): ?><i class="fas fa-lock" style="margin-left:auto; color:#cbd5e1;"></i><?php endif; ?>
-                </div>
-            </div>
-        </div>
+    </div>
 
     <!-- ══ FORMATEUR ══ -->
     <?php elseif ($user_role === 'formateur'): ?>
