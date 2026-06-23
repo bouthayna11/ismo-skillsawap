@@ -47,15 +47,29 @@ elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboa
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --sidebar-bg: #1e293b;
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --main-bg: #f8fafc;
-            --border: #e2e8f0;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
+        :.theme-formateur {
+            --sidebar-bg: #430b54; 
+            --primary: #df64d4; 
+            --primary-hover: #8447ac;
+            --main-bg:       #f8fafc;
+            --border:        #e2e8f0;
+            --text-main:     #1e293b;
+            --text-muted:    #64748b;
+            --green:         #22c55e;
+            --red:           #ef4444;
+            --yellow:        #f59e0b;
         }
+        .theme-admin{
+     --sidebar-bg: #0c540b; 
+    --primary: #198218; 
+    --primary-hover: #1595b6;
+    --main-bg: #f8fafc; 
+    --border: #e2e8f0; 
+    --text-main: #1e293b; 
+    --text-muted: #64748b; 
+    --green: #10b981; /* Was success */
+    --red: #ef4444;   /* Was danger */
+}
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
@@ -112,7 +126,7 @@ elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboa
     </style>
 </head>
 
-<body>
+<body class="<?php echo $themeClass; ?>">
 
     <aside class="sidebar">
         <h1>ISMO SkillSwap</h1>

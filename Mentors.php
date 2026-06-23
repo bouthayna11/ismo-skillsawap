@@ -463,7 +463,7 @@ foreach ($all_mentors as $m) {
             const matchSkill = !skillVal || skills.includes(skillVal);
             card.style.display = (matchName && matchSkill) ? "flex" : "none";
         });
-    
+                }
 
     searchInput.addEventListener("keyup", filterMentors);
     skillFilter.addEventListener("change", filterMentors);

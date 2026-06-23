@@ -88,10 +88,9 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
             <a href="gestion_utilisateurs.php" class="menu-item active"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
             <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion des Badges</span></a>
             <a href="satisfaction.php" class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
+                                <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
         </nav>
-        <div style="margin-top: auto;">
-            <a href="logout.php" class="menu-item" style="color: #f87171;"><i class="fas fa-power-off"></i> <span>Déconnexion</span></a>
-        </div>
     </aside>
 
     <main class="main">

@@ -215,15 +215,9 @@ $initials = strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti
         <a href="mentors.php"       class="menu-item"><i class="fas fa-user-graduate"></i>   <span>Mentors</span></a>
         <a href="passport.php"      class="menu-item"><i class="fas fa-id-card"></i>         <span>Passeport</span></a>
         <?php endif; ?>
-
-        <?php if (in_array($userRole, ['admin', 'administrateur'])): ?>
-        <p class="menu-title">ADMIN</p>
-        <a href="dashboard_admin.php" class="menu-item"><i class="fas fa-user-shield"></i>  <span>Admin</span></a>
-        <?php endif; ?>
+                            <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div style="margin-top:auto;">
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
 
 <main class="main">

@@ -8,6 +8,10 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['admin', 
 require_once 'config.php';
 $user_id    = $_SESSION['user_id'];
 $user_role = $_SESSION['user_role'];
+// theme + dashboard link
+$themeClass = 'theme-stagiaire';
+if (in_array($user_role, ['admin', 'administrateur'])) $themeClass = 'theme-admin';
+elseif ($user_role === 'formateur')                    $themeClass = 'theme-formateur';
 $statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
 $statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 // جلب معلومات المستخدم
@@ -104,7 +108,9 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
-
+                .theme-stagiaire { --sidebar-bg:#1e293b; --primary:#6366f1; --primary-hover:#4f46e5; }
+        .theme-formateur { --sidebar-bg:#430b54; --primary:#df64d4; --primary-hover:#8447ac; }
+        .theme-admin     { --sidebar-bg:#0c540b; --primary:#198218; --primary-hover:#1595b6; }
         /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
@@ -188,7 +194,7 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         }
     </style>
 </head>
-<body>
+<body class="<?php echo $themeClass; ?>">
 
 <aside class="sidebar">
     <h1>ISMO SkillSwap</h1>
@@ -219,13 +225,18 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         <a href="validation_mentors.php"    class="menu-item "><i class="fas fa-user-shield"></i>     <span>Valider Mentors </span>
             <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
         </a>        <a href="gestion_badges.php" class="menu-item active"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
-        <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide</span></a>
-        <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i>    <span>Mentors</span></a>
+   <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
+        <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
+        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
         <?php endif; ?>
+        <?php endif; ?>
+        <p class="menu-title">GENERAL</p>
+        <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i><span>Mentors</span></a>
+         <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide </span></a>
+        <a href="satisfaction.php" class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
+                            <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div style="margin-top:auto;">
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
 
 <main class="main">

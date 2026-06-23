@@ -8,7 +8,9 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['admin', 
 require_once 'config.php';
 $userId    = $_SESSION['user_id'];
 $user_role = $_SESSION['user_role'];
-
+$themeClass = 'theme-stagiaire';
+if (in_array($user_role, ['admin', 'administrateur'])) $themeClass = 'theme-admin';
+elseif ($user_role === 'formateur')                    $themeClass = 'theme-formateur';
 $infosuser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");
 $infosuser->execute([$userId]);
 $user     = $infosuser->fetch();
@@ -92,7 +94,9 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
             --red:           #ef4444;
             --yellow:        #f59e0b;
         }
-
+                .theme-stagiaire { --sidebar-bg:#1e293b; --primary:#6366f1; --primary-hover:#4f46e5; }
+        .theme-formateur { --sidebar-bg:#430b54; --primary:#df64d4; --primary-hover:#8447ac; }
+        .theme-admin     { --sidebar-bg:#0c540b; --primary:#198218; --primary-hover:#1595b6; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
@@ -185,7 +189,7 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         }
     </style>
 </head>
-<body>
+<body class="<?php echo $themeClass; ?>">
 
 <aside class="sidebar">
     <h1>ISMO SkillSwap</h1>
@@ -209,10 +213,9 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         <a href="mentors.php"              class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
         <a href="demandes_aide.php"        class="menu-item"><i class="far fa-question-circle"></i> <span>Demandes d'aide</span></a>
         <a href="satisfaction.php"         class="menu-item"><i class="far fa-star"></i>           <span>Avis & Satisfaction</span></a>
+                            <p class="menu-title" >COMPTE</p>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div style="margin-top:auto;">
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-power-off"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
 
 <main class="main">
