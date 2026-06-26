@@ -22,9 +22,7 @@ $statMentorsPend = $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE stat
 $success_msg = '';
 $error_msg   = '';
 
-// =====================================================================
 // معالجة الأكشن (تغيير رول / حذف / تغيير statut)
-// =====================================================================
 if (isset($_GET['action'], $_GET['id_user'])) {
     $action  = $_GET['action'];
     $id_user = (int) $_GET['id_user'];
