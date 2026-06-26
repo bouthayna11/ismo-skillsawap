@@ -66,7 +66,7 @@ $competences = $pdo->query(
 
 $by_cat     = [];
 foreach ($competences as $c) { $by_cat[$c['categorie'] ?? 'Général'][] = $c; }
-$categories = array_unique(array_column($competences, 'categorie'));
+$categories = array_unique(array_filter(array_column($competences, 'categorie')));
 sort($categories);
 
 $totalComps = count($competences);

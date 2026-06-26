@@ -1,9 +1,17 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'stagiaire') {
-    header("Location: dashboard.php");
+if (!isset($_SESSION['user_id'])) {
+     header("Location: login.php");
+      exit();
+       }
+if ($_SESSION['user_role'] !== 'stagiaire') {
+     if ($_SESSION['user_role'] === 'admin') {
+         header("Location: dashboard_admin.php"); 
+    } elseif ($_SESSION['user_role'] === 'formateur') {
+         header("Location: dashboard_formateur.php"); 
+    } else { header("Location: login.php"); } 
     exit();
-}
+     }
 require_once 'config.php'; 
 $filiere = $_SESSION['user_filiere'] ?? "Développement Digital"; 
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");
