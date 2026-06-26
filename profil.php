@@ -211,9 +211,7 @@ elseif (in_array($user_role, ['administrateur', 'admin']))     { $dashboard_link
         <?php if ($user_role === 'stagiaire'): ?>
         <p class="menu-title">COMPÉTENCES</p>
         <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
-        <a href="mentors.php"    class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
         <?php endif; ?>
-        <p class="menu-title">COMPÉTENCES</p>
         <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
 <?php endif; ?>
         <?php if (in_array($user_role, ['admin', 'formateur', 'administrateur'])): ?>
@@ -231,11 +229,9 @@ elseif (in_array($user_role, ['administrateur', 'admin']))     { $dashboard_link
         <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
         <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
         <?php endif; ?>
-        <p class="menu-title">GÉNÉRAL</p>
-        <a href="mentors.php"       class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
-        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i> <span>Demandes d'aide</span></a>
-        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
+        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
         <p class="menu-title" >COMPTE</p>
+        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
 </aside>

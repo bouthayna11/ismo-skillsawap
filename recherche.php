@@ -16,14 +16,6 @@ $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id
 $queryUser->execute([$userId]);
 $user     = $queryUser->fetch();
 $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
-// Determine la classe dyal le theme b-hssab le rôle
-// Determine la classe dyal le theme b-hssab le rôle
-$themeClass = 'theme-stagiaire';
-if (in_array($userRole, ['admin', 'administrateur'])) {
-    $themeClass = 'theme-admin';
-} elseif ($userRole === 'formateur') {
-    $themeClass = 'theme-formateur';
-}
 $dashboard_link = "dashboard.php";
 if ($userRole === 'formateur')                            { $dashboard_link = "dashboard_formateur.php"; }
 elseif (in_array($userRole, ['admin', 'administrateur'])) { $dashboard_link = "dashboard_admin.php"; }
@@ -102,7 +94,7 @@ $demandesJSON = json_encode(array_map(function($d) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-                .theme-stagiaire { --sidebar-bg:#1e293b; --primary:#6366f1; --primary-hover:#4f46e5; }
+        .theme-stagiaire { --sidebar-bg:#1e293b; --primary:#6366f1; --primary-hover:#4f46e5; }
         .theme-formateur { --sidebar-bg:#430b54; --primary:#df64d4; --primary-hover:#8447ac; }
         .theme-admin     { --sidebar-bg:#0c540b; --primary:#198218; --primary-hover:#1595b6; }
         :root {

@@ -103,6 +103,14 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --sidebar-bg: #1e293b;
+            --primary: #6366f1;
+            --main-bg: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
         .theme-formateur {
             --sidebar-bg: #430b54; 
             --primary: #df64d4; 

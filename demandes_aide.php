@@ -10,7 +10,7 @@ $userRole = $_SESSION['user_role'];
 // theme + dashboard link
 $themeClass = 'theme-stagiaire';
 if (in_array($userRole , ['admin', 'administrateur'])) $themeClass = 'theme-admin';
-elseif ($userRole  === 'formateur') 
+elseif ($userRole  === 'formateur');
 //hena nfs chi kanibo maeloumat dyal utulisateur bash nemlolo initial
 $users = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur =?");
 $users->execute([$userId]);

@@ -78,7 +78,7 @@ $queryMentors = $pdo->query(
 );
 $all_mentors = $queryMentors->fetchAll(PDO::FETCH_ASSOC);
 
-// جلب الكومبيتانس ديال كل منتور من maitriser + competence
+//competence dyal mentors
 $mentor_skills = [];
 foreach ($all_mentors as $m) {
     $stmtSkills = $pdo->prepare(
@@ -205,11 +205,12 @@ foreach ($all_mentors as $m) {
                 <a href="creer_demande.php" class="menu-item" id="nav-creer"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
             <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
 
-            <p class="menu-title">COMPÉTENCES</p>
+            <p class="menu-title">GENERAL</p>
             <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
             <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
 <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
             <p class="menu-title" >COMPTE</p>
+            <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
         </nav>
     </aside>

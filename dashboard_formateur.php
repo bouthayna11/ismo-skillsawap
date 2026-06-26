@@ -131,6 +131,8 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         
         .btn-action-swap { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 600; margin-top: 10px; border: none; cursor: pointer; transition: 0.2s; }
         .btn-action-swap:hover { background: var(--primary-hover); }
+        @media (max-width: 1024px) { .sidebar { width: 80px; padding: 20px 10px; } .sidebar h1, .sidebar span, .menu-title { display: none; } .menu-item { justify-content: center; padding: 12px; } .menu-item i { margin-right: 0; } .middle-row { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; } .sidebar h1 { display: none; } .sidebar nav { display: flex; flex-direction: row; } .main { padding: 20px; } .stats-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body class="<?php echo $themeClass; ?>">

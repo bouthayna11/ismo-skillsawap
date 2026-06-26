@@ -32,7 +32,7 @@ $topComps = $pdo->query(
     "SELECT c.nom_comp, COUNT(v.id_validation) as nb
      FROM validation v
      JOIN competence c ON v.id_comp = c.id_comp
-     GROUP BY v.id_comp ORDER BY nb DESC LIMIT 5"
+     GROUP BY c.nom_comp"
 )->fetchAll(PDO::FETCH_ASSOC);
 
 // Top 5 stagiaires par score
