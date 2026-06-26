@@ -10,7 +10,6 @@ require_once 'config.php';
 $userId   = $_SESSION['user_id'];
 $userRole = $_SESSION['user_role'];
 
-// جلب معلومات المستخدم
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = :id");
 $queryUser->execute(['id' => $userId]);
 $currentUser = $queryUser->fetch();
@@ -20,9 +19,6 @@ $dashboard_link = "dashboard.php";
 if ($userRole === 'formateur')                                   { $dashboard_link = "dashboard_formateur.php"; }
 elseif ($userRole === 'admin' || $userRole === 'administrateur') { $dashboard_link = "dashboard_admin.php"; }
 
-// =====================================================================
-// جلب حالة آخر طلب انضمام كـ Mentor لهاد الستاجير
-// =====================================================================
 $queryStatus = $pdo->prepare(
     "SELECT statut FROM demande_mentorat 
      WHERE id_stagiaire = ? AND (message_demande IS NULL OR message_demande = '') 
