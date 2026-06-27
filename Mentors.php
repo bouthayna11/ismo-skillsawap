@@ -28,7 +28,6 @@ $queryStatus->execute([$userId]);
 $demande_mentor = $queryStatus->fetch();
 $statut_mentor  = $demande_mentor ? $demande_mentor['statut'] : null;
 
-// =====================================================================
 // معالجة طلب الانضمام كـ Mentor
 // =====================================================================
 $msg_postuler = "";
@@ -66,7 +65,6 @@ if (isset($_POST['send_message_help'])) {
     }
 }
 
-// =====================================================================
 // جلب المينتورز المقبولين (statut = 'valide') + كومبيتانسهم
 // =====================================================================
 $queryMentors = $pdo->query(
@@ -458,7 +456,7 @@ foreach ($all_mentors as $m) {
             const matchName  = name.includes(searchVal);
             const matchSkill = !skillVal || skills.includes(skillVal);
             card.style.display = (matchName && matchSkill) ? "flex" : "none";
-        });
+        });}
     
 
     searchInput.addEventListener("keyup", filterMentors);
