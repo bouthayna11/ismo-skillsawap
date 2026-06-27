@@ -17,18 +17,14 @@ $dashboard_link = "dashboard.php";
 if ($userRole === 'formateur')                                { $dashboard_link = "dashboard_formateur.php"; }
 elseif (in_array($userRole, ['admin', 'administrateur']))     { $dashboard_link = "dashboard_admin.php"; }
 
-// =====================================================================
-// جلب معلومات المستخدم
-// =====================================================================
+
 $queryUser = $pdo->prepare("SELECT * FROM utilisateur WHERE id_utilisateur = ?");
 $queryUser->execute([$userId]);
 $user = $queryUser->fetch();
 $nom_complet = htmlspecialchars($user['prenom_uti'] . ' ' . $user['nom_uti']);
 $initials    = strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1));
 
-// =====================================================================
-// بيانات حسب الرول
-// =====================================================================
+
 $filiere      = '';
 $score_global = 0;
 $niveau       = 1;
@@ -49,7 +45,7 @@ if ($userRole === 'stagiaire') {
     $score_global = $stagiaire['score_global'] ?? 0;
     $niveau       = max(1, floor($score_global / 300));
 
-    // كومبيتانس
+
     $stmtComps = $pdo->prepare(
         "SELECT c.nom_comp, c.categorie, m.niveau_estime,
                 v.date_validation,
@@ -66,7 +62,7 @@ if ($userRole === 'stagiaire') {
     $stmtComps->execute([$userId]);
     $competences = $stmtComps->fetchAll(PDO::FETCH_ASSOC);
 
-    // باجات
+
     $stmtBadges = $pdo->prepare(
         "SELECT b.nom_badge, b.description_badge, b.image_badge, o.date_obtention
          FROM obtenir o JOIN badges b ON o.id_badge = b.id_badge
@@ -86,19 +82,19 @@ if ($userRole === 'stagiaire') {
         if ($r['id_utilisateur'] == $userId) { $classement = '#' . $r['rang']; break; }
     }
 
-    // منتور
+
     $chkMentor = $pdo->prepare("SELECT COUNT(*) FROM demande_mentorat WHERE id_stagiaire = ? AND statut = 'valide'");
     $chkMentor->execute([$userId]);
     $is_mentor = $chkMentor->fetchColumn() > 0;
 
 } elseif ($userRole === 'formateur') {
-    // ── Formateur ──
+    //Formateur
     $filiere = "Formateur ISMO";
     $stmt_v  = $pdo->prepare("SELECT COUNT(*) FROM validation WHERE id_formateur = ? AND etat_validation = 'valide'");
     $stmt_v->execute([$userId]);
     $validations_faites = $stmt_v->fetchColumn();
 
-    // كومبيتانس التي صادق عليها
+
     $stmtCompsValid = $pdo->prepare(
         "SELECT v.date_validation, c.nom_comp, c.categorie,
                 u.prenom_uti, u.nom_uti
@@ -272,39 +268,42 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
     <p class="menu-title">GENERAL</p>
     <nav>
         <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php"        class="menu-item"><i class="far fa-user"></i>           <span>Profil</span></a>
+        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
 
-        <?php if (in_array($userRole, ['stagiaire', 'formateur'])): ?>
         <p class="menu-title">ACTIVITÉ</p>
-        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i> <span>Demandes d'aide</span></a>
+        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i>
+            <span><?php echo $userRole === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
+        </a>
         <?php if ($userRole === 'stagiaire'): ?>
-        <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i>    <span>Créer une demande</span></a>
+        <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
         <?php endif; ?>
-        <a href="recherche.php"     class="menu-item"><i class="fas fa-search"></i>          <span>Recherche</span></a>
-
+        <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
+                <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
+            <a href="mentors.php"       class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+        <?php if ($userRole === 'stagiaire'): ?>
         <p class="menu-title">COMPÉTENCES</p>
-        <a href="competence.php"    class="menu-item"><i class="fas fa-award"></i>           <span>Compétences</span></a>
-        <a href="mentors.php"       class="menu-item"><i class="fas fa-user-graduate"></i>   <span>Mentors</span></a>
-        <a href="passport.php"      class="menu-item active"><i class="fas fa-id-card"></i>  <span>Passeport</span></a>
+        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i>         <span>Compétences</span></a>
+        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+        <a href="passport.php" class="menu-item active"><i class="fas fa-id-card"></i>       <span>Passeport</span></a>
         <?php endif; ?>
+
+        <?php if (in_array($userRole, ['formateur', 'admin', 'administrateur'])): ?>
+        <p class="menu-title">CONTRÔLE</p>
+        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
+        <?php endif; ?>
+        </a>
+        <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
+
+        </a>
+        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
 
         <?php if (in_array($userRole, ['admin', 'administrateur'])): ?>
-        <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span></a>
-        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors</span></a>
-        <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_badges.php"        class="menu-item"><i class="fas fa-medal"></i>            <span>Badges</span></a>
-        <a href="passport.php"              class="menu-item active"><i class="fas fa-id-card"></i>  <span>Passeport</span></a>
-        <?php endif; ?>
-
-        <?php if ($userRole === 'formateur'): ?>
-        <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span></a>
-        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors</span></a>
-        <a href="passport.php"              class="menu-item active"><i class="fas fa-id-card"></i>  <span>Passeport</span></a>
+        <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
+        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i>       <span>Gestion Catégories</span></a>
         <?php endif; ?>
     </nav>
-    <div style="margin-top:auto;">
+    <div>
+        <p class="menu-title">COMPTE</p>
         <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </div>
 </aside>

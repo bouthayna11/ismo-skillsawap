@@ -13,9 +13,9 @@ $user = $infosuser->fetch();
 $userNomComplet = $user ? htmlspecialchars($user['prenom_uti'] . ' ' . $user['nom_uti']) : "Administrateur";
 $initials       = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "AD";
 
-// =====================================================================
+
 // Stats générales
-// =====================================================================
+
 $statUsers      = $pdo->query("SELECT COUNT(*) FROM utilisateur")->fetchColumn();
 $statStagiaires = $pdo->query("SELECT COUNT(*) FROM utilisateur WHERE role = 'stagiaire'")->fetchColumn();
 $statFormateurs = $pdo->query("SELECT COUNT(*) FROM utilisateur WHERE role = 'formateur'")->fetchColumn();
@@ -226,11 +226,9 @@ $lastDemandes = $pdo->query(
          <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
         <a href="gestion_categories.php"  class="menu-item"><i class="fas fa-tags"></i> <span>Gestion categories</span></a>
         <p class="menu-title">GENERAL</p>
-        <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i><span>Mentors</span></a>
-         <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide </span></a>
         <a href="satisfaction.php" class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
          <p class="menu-title" >COMPTE</p>
-        <a href="passport.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Passport</span></a>      
+        <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passport</span></a>      
         <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
 </aside>

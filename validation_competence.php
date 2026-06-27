@@ -238,7 +238,7 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
     <p class="menu-title">GENERAL</p>
     <nav>
         <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php" class="menu-item "><i class="far fa-user"></i> <span>Profil</span></a>
+        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
 
         <?php if (in_array($user_role, ['stagiaire', 'formateur'])): ?>
         <p class="menu-title">ACTIVITÉ</p>
@@ -249,29 +249,27 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
             <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
         <?php endif; ?>
         <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
-        <?php if ($user_role === 'stagiaire'): ?>
-        <?php endif; ?>
-        <p class="menu-title">COMPÉTENCES</p>
+
         <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-        <?php endif; ?>
-        <?php if (in_array($user_role, ['admin', 'formateur'])): ?>
+        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+<?php endif; ?>
+        <?php if (in_array($user_role, ['admin', 'formateur', 'administrateur'])): ?>
         <p class="menu-title">CONTRÔLE</p>
         <a href="validation_competence.php" class="menu-item active"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
             <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
         </a>
-        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors </span>
+        <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
             <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
-        </a>        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
-           <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
+        </a>
+        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
+        <?php endif; ?>
+
+        <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
         <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
         <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
         <?php endif; ?>
-        <?php endif; ?>
-        <p class="menu-title">GENERAL</p>
-        <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i><span>Mentors</span></a>
-         <a href="demandes_aide.php"  class="menu-item"><i class="far fa-question-circle"></i>  <span>Demandes d'aide </span></a>
-        <a href="satisfaction.php" class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
-                            <p class="menu-title" >COMPTE</p>
+        <p class="menu-title" >COMPTE</p>
+        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
 </aside>

@@ -20,10 +20,7 @@ $dashboard_link = "dashboard.php";
 if ($userRole === 'formateur')                            { $dashboard_link = "dashboard_formateur.php"; }
 elseif (in_array($userRole, ['admin', 'administrateur'])) { $dashboard_link = "dashboard_admin.php"; }
 
-// =====================================================================
-// جلب الستاجييرز مع كومبيتانس + باجات + mentor status
-// =====================================================================
-// استبدلي الأسطر التي فيها GROUP_CONCAT بهذا الكود المعدل:
+
 $stagiaires = $pdo->query(
     "SELECT u.id_utilisateur, u.prenom_uti, u.nom_uti, s.filiere, s.score_global,
             GROUP_CONCAT(DISTINCT c.nom_comp ORDER BY c.nom_comp SEPARATOR '||') AS competences,
@@ -41,8 +38,7 @@ $stagiaires = $pdo->query(
      GROUP BY u.id_utilisateur
      ORDER BY s.score_global DESC"
 )->fetchAll(PDO::FETCH_ASSOC);
-// جلب الشعب من جدول المهارات لأنك ديجا معمره بالبيانات
-// الديماندات
+
 $demandes = $pdo->query(
     "SELECT d.id_demande, d.Titre AS titre, d.description, d.technologie, d.niveau, d.filiere, d.statut,
             u.prenom_uti, u.nom_uti
@@ -51,11 +47,9 @@ $demandes = $pdo->query(
      ORDER BY d.id_demande DESC"
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// الفيلييرات والكومبيتانس
 $filieres = $pdo->query("SELECT DISTINCT categorie FROM competence WHERE categorie IS NOT NULL ORDER BY categorie")->fetchAll(PDO::FETCH_COLUMN);
 $competences = $pdo->query("SELECT DISTINCT nom_comp FROM competence ORDER BY nom_comp")->fetchAll(PDO::FETCH_COLUMN);
 
-// تحويل لـ JSON
 $stagiairesJSON = json_encode(array_map(function($s) {
     return [
         'id'          => $s['id_utilisateur'],
@@ -234,26 +228,40 @@ $demandesJSON = json_encode(array_map(function($d) {
     <p class="menu-title">GENERAL</p>
     <nav>
         <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php"        class="menu-item"><i class="far fa-user"></i>           <span>Profil</span></a>
+        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
 
+        <?php if (in_array($userRole , ['stagiaire', 'formateur'])): ?>
         <p class="menu-title">ACTIVITÉ</p>
-        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i> <span>Demandes d'aide</span></a>
-        <?php if ($userRole === 'stagiaire'): ?>
-        <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i>    <span>Créer une demande</span></a>
+        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i>
+            <span><?php echo $userRole  === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
+        </a>
+        <?php if ($userRole  === 'stagiaire'): ?>
+            <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
         <?php endif; ?>
-        <a href="recherche.php"     class="menu-item active"><i class="fas fa-search"></i>  <span>Recherche</span></a>
-
+        <a href="recherche.php" class="menu-item active"><i class="fas fa-search"></i> <span>Recherche</span></a>
+        <?php if ($userRole  === 'stagiaire'): ?>
         <p class="menu-title">COMPÉTENCES</p>
-        <a href="competence.php"    class="menu-item"><i class="fas fa-award"></i>           <span>Compétences</span></a>
-        <a href="mentors.php"       class="menu-item"><i class="fas fa-user-graduate"></i>   <span>Mentors</span></a>
-        <a href="passport.php"      class="menu-item"><i class="fas fa-id-card"></i>         <span>Passeport</span></a>
+        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
+        <?php endif; ?>
+        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
+        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+<?php endif; ?>
+        <?php if (in_array($userRole , ['admin', 'formateur', 'administrateur'])): ?>
+        <p class="menu-title">CONTRÔLE</p>
+        <a href="validation_competence.php" class="menu-item "><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
+        </a>
+        <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
+        </a>
+        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
+        <?php endif; ?>
 
-        <?php if (in_array($userRole, ['admin', 'administrateur'])): ?>
-        <p class="menu-title">ADMIN</p>
-        <a href="dashboard_admin.php" class="menu-item"><i class="fas fa-user-shield"></i>  <span>Admin</span></a>
+        <?php if (in_array($userRole , ['admin', 'administrateur'])): ?>
+        <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
+        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
         <?php endif; ?>
         <p class="menu-title" >COMPTE</p>
-       <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
+        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
 </aside>
 

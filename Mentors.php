@@ -51,9 +51,6 @@ if (isset($_POST['postuler_mentor'])) {
     }
 }
 
-// =====================================================================
-// معالجة إرسال رسالة التواصل (Contacter)
-// =====================================================================
 if (isset($_POST['send_message_help'])) {
     $msg_text = trim($_POST['message_text']);
     if (!empty($msg_text)) {
@@ -65,8 +62,7 @@ if (isset($_POST['send_message_help'])) {
     }
 }
 
-// جلب المينتورز المقبولين (statut = 'valide') + كومبيتانسهم
-// =====================================================================
+
 $queryMentors = $pdo->query(
     "SELECT u.id_utilisateur, u.nom_uti, u.prenom_uti, s.score_global
      FROM utilisateur u
@@ -78,7 +74,7 @@ $queryMentors = $pdo->query(
 );
 $all_mentors = $queryMentors->fetchAll(PDO::FETCH_ASSOC);
 
-// جلب الكومبيتانس ديال كل منتور من maitriser + competence
+
 $mentor_skills = [];
 foreach ($all_mentors as $m) {
     $stmtSkills = $pdo->prepare(
@@ -243,7 +239,7 @@ foreach ($all_mentors as $m) {
             <p class="menu-title">ADMIN</p>
             <a href="admin.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Admin</span></a>
         <?php endif; ?>
-                    <p class="menu-title" >COMPTE</p>
+        <p class="menu-title" >COMPTE</p>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
 </aside>

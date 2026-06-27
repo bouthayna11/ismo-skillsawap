@@ -17,9 +17,7 @@ $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user[
 $statCompPend    = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
 $statMentorsPend = $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 
-// =====================================================================
-// جلب التقييمات من table notation
-// =====================================================================
+//table notation
 try {
     $avisList = $pdo->query(
         "SELECT n.score, n.commentaires, n.date_note,

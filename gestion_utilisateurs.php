@@ -22,7 +22,7 @@ $statMentorsPend = $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE stat
 $success_msg = '';
 $error_msg   = '';
 
-// معالجة الأكشن (تغيير رول / حذف / تغيير statut)
+//statut
 if (isset($_GET['action'], $_GET['id_user'])) {
     $action  = $_GET['action'];
     $id_user = (int) $_GET['id_user'];
@@ -46,7 +46,7 @@ if (isset($_GET['action'], $_GET['id_user'])) {
         }
     }
 }
-// فلتر
+
 $filterRole = $_GET['role'] ?? 'tous';
 $search     = trim($_GET['search'] ?? '');
 
@@ -203,32 +203,27 @@ $totalActifs  = $pdo->query("SELECT COUNT(*) FROM utilisateur WHERE is_verified 
 
 <aside class="sidebar">
     <h1>ISMO SkillSwap</h1>
-    <p class="menu-title">SUPERVISION</p>
+    <p class="menu-title">GENERAL</p>
     <nav>
-        <a href="dashboard_admin.php"      class="menu-item"><i class="fas fa-th-large"></i>   <span>Dashboard</span></a>
-        <a href="profil.php"               class="menu-item"><i class="far fa-user"></i>        <span>Profil</span></a>
-
+        <a href="dashboard_admin.php"      class="menu-item "><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
+        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
         <p class="menu-title">CONTRÔLE</p>
         <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
             <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
         </a>
-        <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors</span>
+         <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors</span>
             <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
         </a>
-        <a href="gestion_utilisateurs.php"  class="menu-item active"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_badges.php"        class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
-        <a href="gestion_categories.php"    class="menu-item"><i class="fas fa-tags"></i>             <span>Gestion Catégories</span></a>
-
-        <p class="menu-title">GÉNÉRAL</p>
-        <a href="mentors.php"              class="menu-item"><i class="fas fa-user-graduate"></i>   <span>Mentors</span></a>
-        <a href="demandes_aide.php"        class="menu-item"><i class="far fa-question-circle"></i> <span>Demandes d'aide</span></a>
-        <a href="satisfaction.php"         class="menu-item"><i class="far fa-star"></i>            <span>Avis & Satisfaction</span></a>
+        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
+         <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
+        <a href="gestion_categories.php"  class="menu-item active"><i class="fas fa-tags"></i> <span>Gestion categories</span></a>
+        <p class="menu-title">GENERAL</p>
+        <a href="satisfaction.php" class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
+         <p class="menu-title" >COMPTE</p>
+        <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passport</span></a>      
+        <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div style="margin-top:auto;">
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-power-off"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
-
 <main class="main">
     <header>
         <div class="admin-badge"><i class="fas fa-users-cog"></i> Gestion des Utilisateurs</div>

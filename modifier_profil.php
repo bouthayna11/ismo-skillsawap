@@ -16,9 +16,6 @@ elseif (in_array($userRole, ['admin', 'administrateur']))        { $dashboard_li
 $success_msg = '';
 $error_msg   = '';
 
-// =====================================================================
-// معالجة الفورم
-// =====================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prenom = trim($_POST['prenom'] ?? '');
     $nom    = trim($_POST['nom']    ?? '');
@@ -33,13 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!empty($pwd) && $pwd !== $pwd2) {
         $error_msg = "Les mots de passe ne correspondent pas.";
     } else {
-        // تحقق: واش الإيميل مستعمل من حد آخر
         $chkEmail = $pdo->prepare("SELECT COUNT(*) FROM utilisateur WHERE email_uti = ? AND id_utilisateur != ?");
         $chkEmail->execute([$email, $userId]);
         if ($chkEmail->fetchColumn() > 0) {
             $error_msg = "Cet email est déjà utilisé par un autre compte.";
         } else {
-            // Upload صورة
             $photo = null;
             if (!empty($_FILES['photo']['name'])) {
                 $ext     = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
@@ -61,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (empty($error_msg)) {
-                // تحديث المعلومات
                 if ($photo) {
                     $upd = $pdo->prepare("UPDATE utilisateur SET prenom_uti = ?, nom_uti = ?, email_uti = ?, photo = ? WHERE id_utilisateur = ?");
                     $upd->execute([$prenom, $nom, $email, $photo, $userId]);
@@ -70,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $upd->execute([$prenom, $nom, $email, $userId]);
                 }
 
-                // تحديث الباسوورد إذا كتب واحد جديد
                 if (!empty($pwd)) {
                     $hash = password_hash($pwd, PASSWORD_DEFAULT);
                     $pdo->prepare("UPDATE utilisateur SET pwd_uti = ? WHERE id_utilisateur = ?")->execute([$hash, $userId]);
@@ -82,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// جلب معلومات المستخدم
 $queryUser = $pdo->prepare("SELECT * FROM utilisateur WHERE id_utilisateur = ?");
 $queryUser->execute([$userId]);
 $user     = $queryUser->fetch();
