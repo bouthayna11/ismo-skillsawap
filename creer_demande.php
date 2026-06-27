@@ -11,7 +11,7 @@ if ($_SESSION['user_role'] !== 'stagiaire') {
          header("Location: dashboard_formateur.php"); 
     } else { header("Location: login.php"); } 
     exit();
-     }
+    }
 require_once 'config.php'; 
 $filiere = $_SESSION['user_filiere'] ?? "Développement Digital"; 
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");

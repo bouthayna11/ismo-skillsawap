@@ -231,41 +231,39 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
         <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
         <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
 
+        <?php if (in_array($userRole , ['stagiaire', 'formateur'])): ?>
         <p class="menu-title">ACTIVITÉ</p>
         <a href="demandes_aide.php" class="menu-item active"><i class="far fa-question-circle"></i>
-            <span><?php echo $userRole === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
+            <span><?php echo $userRole  === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
         </a>
-        <?php if ($userRole === 'stagiaire'): ?>
-        <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
-                        <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
+        <?php if ($userRole  === 'stagiaire'): ?>
+            <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
         <?php endif; ?>
-        <?php if ($userRole === 'stagiaire'): ?>
+        <a href="recherche.php" class="menu-item "><i class="fas fa-search"></i> <span>Recherche</span></a>
+        <?php if ($userRole  === 'stagiaire'): ?>
         <p class="menu-title">COMPÉTENCES</p>
-        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i>         <span>Compétences</span></a>
-        <a href="mentors.php"    class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
-        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i>       <span>Passeport</span></a>
+        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
         <?php endif; ?>
-
-        <?php if (in_array($userRole, ['formateur', 'admin', 'administrateur'])): ?>
+        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
+        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
+<?php endif; ?>
+        <?php if (in_array($userRole , ['admin', 'formateur', 'administrateur'])): ?>
         <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
+        <a href="validation_competence.php" class="menu-item "><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
         </a>
         <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
-            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
         </a>
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
         <?php endif; ?>
 
-        <?php if (in_array($userRole, ['admin', 'administrateur'])): ?>
+        <?php if (in_array($userRole , ['admin', 'administrateur'])): ?>
         <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i>       <span>Gestion Catégories</span></a>
+        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
         <?php endif; ?>
+        <p class="menu-title" >COMPTE</p>
+        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
+            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
-    <div>
-        <p class="menu-title">COMPTE</p>
-        <a href="logout.php" class="menu-item" style="color:#f87171;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </div>
 </aside>
 
 <main class="main">

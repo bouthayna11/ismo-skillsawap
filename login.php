@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email_uti = ? AND role = ? AND is_verified = 1");
+            $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email_uti = ? AND role = ?");
             $stmt->execute([$email, $role]);
             $user = $stmt->fetch();
 
