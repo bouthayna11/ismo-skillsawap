@@ -6,8 +6,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'formateur') {
 }
 require_once 'config.php';
 $user_role = $_SESSION['user_role'];
-$statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
-$statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 $userId = $_SESSION['user_id'];
 $queryUser = $pdo->prepare("SELECT * FROM utilisateur WHERE id_utilisateur = ?");
 $queryUser->execute([$userId]);
@@ -75,7 +73,6 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
         
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
         .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 8px 8px; font-weight: 600; }
@@ -83,7 +80,6 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         .menu-item i { margin-right: 12px; width: 20px; text-align: center; }
         .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
         
-        /* Main */
         .main { flex: 1; padding: 40px; display: flex; flex-direction: column; gap: 24px; width: 100%; overflow-y: auto; }
         header { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
         .search-box { background: white; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); flex: 1; max-width: 400px; display: flex; align-items: center; }
@@ -93,24 +89,20 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
         .page-title { font-size: 24px; font-weight: 700; margin-top: 10px; }
         .welcome-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 10px; }
         
-        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
         .card-stat { background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border); transition: transform 0.2s; }
         .card-stat:hover { transform: translateY(-2px); }
         .card-stat .val { font-size: 32px; font-weight: 700; color: var(--primary); display: block; margin-bottom: 6px; }
         .card-stat .label { color: var(--text-muted); font-size: 14px; font-weight: 500; }
         
-        /* Layout Panels */
         .middle-row { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
         .section-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; margin-bottom: 1px; }
         .section-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         
-        /* Tables & Lists */
         .mentor-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
         .mentor-table th { color: var(--text-muted); font-weight: 600; padding: 12px; border-bottom: 2px solid var(--border); }
         .mentor-table td { padding: 16px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         
-        /* Badges & Buttons */
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
         .badge-nv { background: #eef2ff; color: #4f46e5; }
         .badge-help { background: #f0fdf4; color: #166534; }
@@ -148,18 +140,13 @@ elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_
     <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i> <span>Offres d'aide</span></a>
     <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
     <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-    <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
     <?php if (in_array($user_role, ['admin', 'formateur'])): ?>
         <p class="menu-title">CONTRÔLE</p>
         <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
         </a>
         <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors </span>
-            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
         </a>
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
-         <p class="menu-title">GÉNÉRAL</p>
-        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
         <?php endif; ?>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
 </nav>

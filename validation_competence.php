@@ -6,8 +6,6 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['formateu
 }
 $user_role = $_SESSION['user_role'];
 require_once 'config.php';
-$statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
-$statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 $userId   = $_SESSION['user_id'];
 $userRole = $_SESSION['user_role'];
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = :id");
@@ -16,7 +14,6 @@ $user     = $queryUser->fetch();
 $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "FO";
 
 $dashboard_link = $userRole === 'formateur' ? "dashboard_formateur.php" : "dashboard_admin.php";
-// Determine la classe dyal le theme b-hssab le rôle
 $themeClass = 'theme-stagiaire';
 if (in_array($user_role, ['admin', 'administrateur'])) {
     $themeClass = 'theme-admin';
@@ -31,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
     if (in_array($action, ['valide', 'refuse'])) {
 
-        // تحقق: واش هاد المستخدم كاين فـ table formateur
         $chkF = $pdo->prepare("SELECT COUNT(*) FROM formateur WHERE id_utilisateur = ?");
         $chkF->execute([$userId]);
         $isFormateur = $chkF->fetchColumn() > 0;
@@ -129,13 +125,12 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
     --border: #e2e8f0; 
     --text-main: #1e293b; 
     --text-muted: #64748b; 
-    --green: #10b981; /* Was success */
-    --red: #ef4444;   /* Was danger */
+    --green: #10b981;
+    --red: #ef4444;  
 }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
         .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
@@ -145,7 +140,6 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
         .notif-dot { background: var(--yellow); color: #d6b810; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto;}
 
 
-        /* Main */
         .main  { flex: 1; padding: 40px; overflow-y: auto; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
         .search-box { background: white; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); flex: 1; max-width: 400px; display: flex; align-items: center; }
@@ -155,12 +149,10 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
         .page-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
         .page-sub   { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
 
-        /* Alertes */
         .alert { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .alert-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
-        /* Stats */
         .stats-bar { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
         .stat-box  { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 22px; flex: 1; min-width: 120px; text-align: center; cursor: pointer; text-decoration: none; transition: 0.2s; display: block; }
         .stat-box:hover { border-color: var(--primary); }
@@ -172,13 +164,11 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
         .stat-num.refuse  { color: var(--red); }
         .stat-num.tous    { color: var(--primary); }
 
-        /* Tabs filtres */
         .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-tab  { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--text-muted); background: white; border: 1px solid var(--border); transition: 0.2s; }
         .filter-tab:hover  { border-color: var(--primary); color: var(--primary); }
         .filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Table */
         .table-card { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
         .table-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .table-header h3 { font-size: 15px; font-weight: 700; }
@@ -213,7 +203,6 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
         .empty-state i { font-size: 40px; color: #cbd5e1; margin-bottom: 12px; display: block; }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .sidebar { width: 80px; padding: 20px 10px; }
             .sidebar h1, .sidebar span, .menu-title { display: none; }
@@ -233,46 +222,10 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
 </head>
 <body class="<?php echo $themeClass; ?>">
 
-<aside class="sidebar">
-    <h1>ISMO SkillSwap</h1>
-    <p class="menu-title">GENERAL</p>
-    <nav>
-        <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
-
-        <?php if (in_array($user_role, ['stagiaire', 'formateur'])): ?>
-        <p class="menu-title">ACTIVITÉ</p>
-        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i>
-            <span><?php echo $user_role === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
-        </a>
-        <?php if ($user_role === 'stagiaire'): ?>
-            <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
-        <?php endif; ?>
-        <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
-
-        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
-<?php endif; ?>
-        <?php if (in_array($user_role, ['admin', 'formateur', 'administrateur'])): ?>
-        <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item active"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
-        </a>
-        <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
-            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
-        </a>
-        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
-        <?php endif; ?>
-
-        <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
-        <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
-        <?php endif; ?>
-        <p class="menu-title" >COMPTE</p>
-        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
-            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </nav>
-</aside>
+<body class="<?php echo $themeClass; ?>">
+<?php if($user_role==="admin")include 'sidebar.php'; ?>
+<?php if($user_role==="formateur")include 'sidebarform.php'; ?>
+<?php if($user_role==="stagiaire")include 'sidebarstgpass.php'; ?>
 
 <main class="main">
     <header>
@@ -293,7 +246,6 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
         <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?php echo htmlspecialchars($error_msg); ?></div>
     <?php endif; ?>
 
-    <!-- Stats -->
     <div class="stats-bar">
         <a href="?filter=en_attente" class="stat-box <?php echo $filter === 'en_attente' ? 'active-filter' : ''; ?>">
             <div class="stat-num pending"><?php echo $stats['en_attente']; ?></div>
@@ -313,7 +265,6 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
         </a>
     </div>
 
-    <!-- Table -->
     <div class="table-card">
         <div class="table-header">
             <h3><i class="fas fa-clipboard-list" style="margin-right:8px; color:var(--primary);"></i>
@@ -406,7 +357,6 @@ foreach ($stats_raw as $s) { $stats[$s['etat_validation']] = $s['nb']; }
 </main>
 
 <script>
-    // بحث live
     document.getElementById('searchInput').addEventListener('keyup', function() {
         const val = this.value.toLowerCase();
         document.querySelectorAll('.demande-row').forEach(row => {

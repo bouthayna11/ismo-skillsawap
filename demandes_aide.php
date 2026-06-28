@@ -1,103 +1,97 @@
 <?php
 session_start();
+//kan kan proteger l page heta ylogi uti
 if (!isset($_SESSION['user_id'])) {
     header("Location: dashboard.php");
     exit();
 }
 require_once 'config.php';
-
-$userId   = $_SESSION['user_id'];
-$userRole = $_SESSION['user_role'];
-
-// Theme
-$themeClass = 'theme-stagiaire';
-if (in_array($userRole, ['admin', 'administrateur'])) $themeClass = 'theme-admin';
-elseif ($userRole === 'formateur')                    $themeClass = 'theme-formateur';
-
-// Dashboard link
-$dashboard_link = "dashboard.php";
-if ($userRole === 'formateur')                                { $dashboard_link = "dashboard_formateur.php"; }
-elseif (in_array($userRole, ['admin', 'administrateur']))     { $dashboard_link = "dashboard_admin.php"; }
-
-// Notifications
-$statCompPend    = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
-$statMentorsPend = $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
-
+//hadi ela hasab nbdelo theme d page pach ykoun kol role intefacce
+$theme = 'theme-stagiaire';
+if (in_array($_SESSION['user_role'], ['admin', 'administrateur'])) $theme = 'theme-admin';
+elseif ($_SESSION['user_role'] === 'formateur')                    $theme = 'theme-formateur';
+// hena kansardo kol whad l dash hite had page katelae l role b 3
+$dash = "dashboard.php";
+if ($_SESSION['user_role'] === 'formateur'){ $dash = "dashboard_formateur.php"; }
+elseif (in_array($_SESSION['user_role'], ['admin', 'administrateur'])){ $dash = "dashboard_admin.php"; }
 // Initials
 $users = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");
-$users->execute([$userId]);
+$users->execute([$_SESSION['user_id']]);
 $user     = $users->fetch();
-$initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
-
-
+if ($user) {
+    $initials = strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1));
+} else {
+    $initials = "ST";
+}
 // 1. Supprimer demande
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_supprimer'])) {
-    $id_demande = (int) $_POST['iddem'];
-    $check = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande = ?");
-    $check->execute([$id_demande]);
-    $ownerId = $check->fetchColumn();
-
-    if ($ownerId == $userId || in_array($userRole, ['formateur', 'admin', 'administrateur'])) {
-        $pdo->prepare("DELETE FROM reponses_aide WHERE id_demande = ?")->execute([$id_demande]);
-        $pdo->prepare("DELETE FROM demande_aide WHERE id_demande = ?")->execute([$id_demande]);
+    $id_demande = (int)$_POST['iddem'];
+    //henia kanjibo mol aide
+    $stmt = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande = ?");
+    $stmt->execute([$id_demande]);
+    $ownerId = $stmt->fetchColumn();
+    //kanchofo wash yqedar ymsah aide
+    $isAdmin = in_array($_SESSION['user_role'], ['formateur', 'admin', 'administrateur']);
+    $isOwner = ($ownerId == $_SESSION['user_id']);
+    if ($isAdmin || $isOwner) {
+        try {
+            //hena kanmsho aides
+            $pdo->prepare("DELETE FROM reponses_aide WHERE id_demande = ?")->execute([$id_demande]);
+            //o hena kanmsho demandes
+            $pdo->prepare("DELETE FROM demande_aide WHERE id_demande = ?")->execute([$id_demande]);
+        } catch (Exception $e) {
+           die("Erreur de deletion:".$e->getMessage());
+        }
     }
     header("Location: demandes_aide.php");
     exit();
 }
-
-
-// 2. Nouvelle réponse
-
+//henia l nouvelle reponse
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reponse_new'])) {
-    $id_demande = (int) $_POST['iddem'];
+    $id_demande = (int)$_POST['iddem'];
     $message    = trim($_POST['message'] ?? '');
-
     if (!empty($message)) {
-        $checkOwner = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande = ?");
-        $checkOwner->execute([$id_demande]);
-        $ownerId = $checkOwner->fetchColumn();
-
-        if ($ownerId != $userId) {
-            $checkDouble = $pdo->prepare("SELECT COUNT(*) FROM reponses_aide WHERE id_demande = ? AND id_aidant = ?");
-            $checkDouble->execute([$id_demande, $userId]);
-            if ($checkDouble->fetchColumn() == 0) {
-                $pdo->prepare("INSERT INTO reponses_aide (id_demande, id_aidant, message, statut) VALUES (?,?,?,'en_attente')")
-                    ->execute([$id_demande, $userId, $message]);
+        // kanjibo lid dyal mol aide bash nchofo wash fayto jaweb qbel 
+        $owner = $pdo->prepare("SELECT id_stagiaire FROM demande_aide WHERE id_demande = ?");
+        $owner->execute([$id_demande]);
+        $ownerId = $owner->fetchColumn();
+        //kanchofo bili machi owner dyal aide o bili eaomro eml chi reponse lhad demande
+        if ($ownerId != $_SESSION['user_id']) {
+            $check = $pdo->prepare("SELECT COUNT(*) FROM reponses_aide WHERE id_demande = ? AND id_aidant = ?");
+            $check->execute([$id_demande, $_SESSION['user_id']]);
+            if ($check->fetchColumn() == 0) {
+                //henia kansejlo aide f reponse aide 
+                $stmt = $pdo->prepare("INSERT INTO reponses_aide (id_demande, id_aidant, message, statut) VALUES (?, ?, ?, 'en_attente')");
+                $stmt->execute([$id_demande, $_SESSION['user_id'], $message]);
             }
         }
     }
     header("Location: demandes_aide.php#demande-" . $id_demande);
     exit();
 }
-
-
 // 3. Accepter / Refuser réponse
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reponse'])) {
-    $id_reponse = (int) $_POST['idrep'];
+    $id_reponse = (int)$_POST['idrep'];
     $status     = $_POST['status'] ?? '';
-
-    $check = $pdo->prepare(
-        "SELECT d.id_stagiaire FROM reponses_aide r
-         JOIN demande_aide d ON r.id_demande = d.id_demande
-         WHERE r.id_reponse = ?"
-    );
-    $check->execute([$id_reponse]);
-    $owner = $check->fetchColumn();
-
-    if ($owner == $userId && in_array($status, ['accepte', 'refuse'])) {
+    //kanchofo had lreponse wash dyal had id_demnade o lid d uti
+    $stmt = $pdo->prepare("
+        SELECT d.id_stagiaire 
+        FROM reponses_aide r
+        JOIN demande_aide d ON r.id_demande = d.id_demande
+        WHERE r.id_reponse = ?
+    ");
+    $stmt->execute([$id_reponse]);
+    $ownerId = $stmt->fetchColumn();
+    if ($ownerId == $_SESSION['user_id'] && in_array($status, ['accepte', 'refuse'])) {
         $pdo->prepare("UPDATE reponses_aide SET statut = ? WHERE id_reponse = ?")->execute([$status, $id_reponse]);
     }
     header("Location: demandes_aide.php");
     exit();
 }
-
-
 $query = $pdo->query(
     "SELECT d.id_demande, d.Titre AS titre, d.description, d.technologie,
             d.niveau, d.filiere, d.id_stagiaire, d.statut,
-            u.nom_uti, u.prenom_uti
+            u.nom_uti, u.prenom_uti, u.photo
      FROM demande_aide d
      JOIN utilisateur u ON d.id_stagiaire = u.id_utilisateur
      ORDER BY d.id_demande DESC"
@@ -222,32 +216,32 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
         }
     </style>
 </head>
-<body class="<?php echo $themeClass; ?>">
+<body class="<?php echo $theme; ?>">
 
 <aside class="sidebar">
     <h1>ISMO SkillSwap</h1>
     <p class="menu-title">GENERAL</p>
     <nav>
-        <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
+        <a href="<?php echo $dash; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
         <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
 
-        <?php if (in_array($userRole , ['stagiaire', 'formateur'])): ?>
+        <?php if (in_array($_SESSION['user_role'] , ['stagiaire', 'formateur'])): ?>
         <p class="menu-title">ACTIVITÉ</p>
         <a href="demandes_aide.php" class="menu-item active"><i class="far fa-question-circle"></i>
-            <span><?php echo $userRole  === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
+            <span><?php echo $_SESSION['user_role']  === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
         </a>
-        <?php if ($userRole  === 'stagiaire'): ?>
+        <?php if ($_SESSION['user_role']  === 'stagiaire'): ?>
             <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
         <?php endif; ?>
         <a href="recherche.php" class="menu-item "><i class="fas fa-search"></i> <span>Recherche</span></a>
-        <?php if ($userRole  === 'stagiaire'): ?>
+        <?php if ($_SESSION['user_role']  === 'stagiaire'): ?>
         <p class="menu-title">COMPÉTENCES</p>
         <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
+                <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
         <?php endif; ?>
         <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
 <?php endif; ?>
-        <?php if (in_array($userRole , ['admin', 'formateur', 'administrateur'])): ?>
+        <?php if (in_array($_SESSION['user_role'] , ['admin', 'formateur', 'administrateur'])): ?>
         <p class="menu-title">CONTRÔLE</p>
         <a href="validation_competence.php" class="menu-item "><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
         </a>
@@ -256,12 +250,12 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
         <?php endif; ?>
 
-        <?php if (in_array($userRole , ['admin', 'administrateur'])): ?>
+        <?php if (in_array($_SESSION['user_role'] , ['admin', 'administrateur'])): ?>
         <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
         <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
+                <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
         <?php endif; ?>
         <p class="menu-title" >COMPTE</p>
-        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
     </nav>
 </aside>
@@ -277,14 +271,14 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="page-header">
         <h1 class="page-title">
-            <?php echo in_array($userRole, ['formateur']) ? "Offres d'aide" : "Demandes d'aide"; ?>
+            <?php echo in_array($_SESSION['user_role'], ['formateur']) ? "Offres d'aide" : "Demandes d'aide"; ?>
         </h1>
-        <?php if ($userRole === 'stagiaire'): ?>
+        <?php if ($_SESSION['user_role'] === 'stagiaire'): ?>
             <a href="creer_demande.php" class="btn-create"><i class="fas fa-plus"></i> Nouvelle demande</a>
         <?php endif; ?>
     </div>
 
-    <?php if ($userRole === 'formateur'): ?>
+    <?php if ($_SESSION['user_role'] === 'formateur'): ?>
     <div class="formateur-note">
         <i class="fas fa-eye"></i>
         En tant que formateur, vous pouvez consulter toutes les demandes et supprimer les publications inappropriées.
@@ -300,8 +294,7 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
 
         <?php foreach ($db_demandes as $d):
-            $isOwner = ($d['id_stagiaire'] == $userId);
-
+            $isOwner = ($d['id_stagiaire'] == $_SESSION['user_id']);
             $stmt = $pdo->prepare(
                 "SELECT r.*, u.prenom_uti, u.nom_uti
                  FROM reponses_aide r
@@ -311,11 +304,10 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
             );
             $stmt->execute([$d['id_demande']]);
             $reponses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
             $nb_accepte  = count(array_filter($reponses, fn($r) => ($r['statut'] ?? '') === 'accepte'));
             $dejaRepondu = false;
             foreach ($reponses as $r) {
-                if ($r['id_aidant'] == $userId) { $dejaRepondu = true; break; }
+                if ($r['id_aidant'] == $_SESSION['user_id']) { $dejaRepondu = true; break; }
             }
         ?>
         <div class="card" id="demande-<?php echo $d['id_demande']; ?>"
@@ -326,7 +318,7 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
                 <span class="card-title"><?php echo htmlspecialchars($d['titre'] ?? ''); ?></span>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <!-- Bouton supprimer: owner OU formateur OU admin -->
-                    <?php if ($isOwner || in_array($userRole, ['formateur', 'admin', 'administrateur'])): ?>
+                    <?php if ($isOwner || in_array($_SESSION['user_role'], ['formateur', 'admin', 'administrateur'])): ?>
                     <form method="POST" action="demandes_aide.php" style="margin:0;">
                         <input type="hidden" name="action_supprimer" value="1">
                         <input type="hidden" name="iddem" value="<?php echo $d['id_demande']; ?>">
@@ -408,8 +400,8 @@ $db_demandes = $query->fetchAll(PDO::FETCH_ASSOC);
                 <?php endforeach; ?>
             </div>
 
-            <!-- فورم الرد — غير للستاجير (مشي صاحب الطلب) والفورماتور ما يجاوبش -->
-            <?php if (!$isOwner && $userRole === 'stagiaire'): ?>
+            <!---->
+            <?php if (!$isOwner && $_SESSION['user_role'] === 'stagiaire'): ?>
             <div class="reply-form-section">
                 <p class="reply-form-title"><i class="fas fa-reply" style="margin-right:6px;"></i>Apporter votre aide</p>
                 <?php if ($dejaRepondu): ?>

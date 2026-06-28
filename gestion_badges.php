@@ -18,19 +18,14 @@ $infosuser->execute([$userId]);
 $user     = $infosuser->fetch();
 $initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "AD";
 
-$statCompPend    = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
-$statMentorsPend = $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
-
 $success_msg = '';
 
-// delete badge
 if (isset($_GET['action']) && $_GET['action'] === 'supprimer') {
     $pdo->prepare("DELETE FROM obtenir WHERE id_utilisateur = ? AND id_badge = ?")->execute([(int)$_GET['uid'], (int)$_GET['bid']]);
     header("Location: gestion_badges.php?msg=supprime");
     exit();
 }
 
-// ajouter badge
 if (isset($_POST['attribuer_badge'])) {
     $uid = (int) $_POST['id_utilisateur'];
     $bid = (int) $_POST['id_badge'];
@@ -45,7 +40,6 @@ if (isset($_POST['attribuer_badge'])) {
 
 $msg = $_GET['msg'] ?? '';
 
-//select infos
 $stagiaires = $pdo->query(
     "SELECT u.id_utilisateur, u.nom_uti, u.prenom_uti,
             COALESCE(s.score_global, 0) AS score_global,
@@ -83,7 +77,6 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ── Themes ── */
         .theme-stagiaire { --sidebar-bg:#1e293b; --primary:#6366f1; --primary-hover:#4f46e5; }
         .theme-formateur { --sidebar-bg:#430b54; --primary:#df64d4; --primary-hover:#8447ac; }
         .theme-admin     { --sidebar-bg:#0c540b; --primary:#198218; --primary-hover:#1595b6; }
@@ -101,7 +94,6 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
         .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
@@ -110,7 +102,6 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
         .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
         .notif-dot { background: var(--yellow); color: #1e293b; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto; }
 
-        /* Main */
         .main  { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
         header { display: flex; justify-content: space-between; align-items: center; }
         .admin-badge { background: #d1fae5; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
@@ -119,30 +110,25 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
         .page-title { font-size: 24px; font-weight: 700; }
         .page-sub   { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
-        /* Alertes */
         .alert { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
         .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
-        /* Stats — نفس dashboard */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .stat-card  { background: white; border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,.06); transition: 0.3s; }
         .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.10); }
         .stat-num   { font-size: 24px; font-weight: 700; }
         .stat-label { font-size: 13px; color: var(--text-muted); }
 
-        /* Section card */
         .section-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; }
         .section-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
 
-        /* Catalogue badges */
         .badges-catalogue { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
         .badge-card { background: #fefce8; border: 1px solid #fde047; border-radius: 12px; padding: 16px; text-align: center; }
         .badge-icon { font-size: 28px; color: var(--yellow); margin-bottom: 8px; }
         .badge-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
         .badge-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
 
-        /* Table */
         .table-card { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
         .table-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .table-header h3 { font-size: 15px; font-weight: 700; }
@@ -171,7 +157,6 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
         .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
         .empty-state i { font-size: 36px; color: #cbd5e1; margin-bottom: 10px; display: block; }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .sidebar { width: 80px; padding: 20px 10px; }
             .sidebar h1, .sidebar span, .menu-title { display: none; }
@@ -189,51 +174,9 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
     </style>
 </head>
 <body class="<?php echo $themeClass; ?>">
-
-<aside class="sidebar">
-    <h1>ISMO SkillSwap</h1>
-    <p class="menu-title">GENERAL</p>
-    <nav>
-        <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
-
-        <?php if (in_array($user_role, ['stagiaire', 'formateur'])): ?>
-        <p class="menu-title">ACTIVITÉ</p>
-        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i>
-            <span><?php echo $user_role === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
-        </a>
-        <?php if ($user_role === 'stagiaire'): ?>
-            <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
-        <?php endif; ?>
-        <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
-        <?php if ($user_role === 'stagiaire'): ?>
-        <p class="menu-title">COMPÉTENCES</p>
-        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
-        <?php endif; ?>
-        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
-<?php endif; ?>
-        <?php if (in_array($user_role, ['admin', 'formateur', 'administrateur'])): ?>
-        <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
-        </a>
-        <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
-            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
-        </a>
-        <a href="gestion_badges.php" class="menu-item  active"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
-        <?php endif; ?>
-
-        <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
-        <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
-        <?php endif; ?>
-        <p class="menu-title" >COMPTE</p>
-        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
-            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </nav>
-</aside>
-
+<?php if($user_role==="admin")include 'sidebar.php'; ?>
+<?php if($user_role==="formateur")include 'sidebarform.php'; ?>
+<?php if($user_role==="stagiaire")include 'sidebarstgpass.php'; ?>
 <main class="main">
     <header>
         <div class="admin-badge"><i class="fas fa-medal"></i> Gestion des Badges</div>
@@ -251,7 +194,6 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
         <div class="alert alert-info"><i class="fas fa-info-circle"></i> Badge supprimé.</div>
     <?php endif; ?>
 
-    <!-- Stats — نفس dashboard -->
     <div class="section-card">
         <div class="section-title">
             <span><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:8px;"></i>Statistiques</span>
@@ -288,7 +230,6 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
         </div>
     </div>
 
-    <!-- Catalogue badges -->
     <div class="section-card">
         <div class="section-title">
             <span><i class="fas fa-th-large" style="color:#f59e0b; margin-right:8px;"></i>Catalogue des Badges</span>
@@ -304,7 +245,6 @@ elseif ($user_role  === 'admin' || $user_role  === 'administrateur') { $dashboar
         </div>
     </div>
 
-    <!-- Table stagiaires -->
     <div class="table-card">
         <div class="table-header">
             <h3><i class="fas fa-users" style="margin-right:8px; color:var(--primary);"></i>Attribution par Stagiaire</h3>

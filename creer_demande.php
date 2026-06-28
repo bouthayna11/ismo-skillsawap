@@ -1,36 +1,53 @@
 <?php
 session_start();
+//Verifier si utilisateur est connecte
+// Si 'user_id' makaynshi f session, on le redirige vers la page de connexion
 if (!isset($_SESSION['user_id'])) {
-     header("Location: login.php");
-      exit();
-       }
-if ($_SESSION['user_role'] !== 'stagiaire') {
-     if ($_SESSION['user_role'] === 'admin') {
-         header("Location: dashboard_admin.php"); 
-    } elseif ($_SESSION['user_role'] === 'formateur') {
-         header("Location: dashboard_formateur.php"); 
-    } else { header("Location: login.php"); } 
+    header("Location: login.php");
     exit();
-    }
+} 
+// Si le role est diffrent nsardouh  vers le dashbroad dyalo
+if ($_SESSION['user_role'] !== 'stagiaire') {
+    if ($_SESSION['user_role'] === 'admin') {
+        header("Location: dashboard_admin.php"); 
+    } 
+    elseif ($_SESSION['user_role'] === 'formateur') {
+        header("Location: dashboard_formateur.php"); 
+    } 
+    else { 
+        header("Location: login.php"); 
+    } 
+    exit();
+}
 require_once 'config.php'; 
-$filiere = $_SESSION['user_filiere'] ?? "Développement Digital"; 
-$queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");
-$queryUser->execute([$_SESSION['user_id']]);
-$user = $queryUser->fetch();
-$stmt_skills = $pdo->query("SELECT nom_comp FROM competence");
-$skills_list = $stmt_skills->fetchAll(PDO::FETCH_COLUMN);
-$nom_complet = $user ? htmlspecialchars($user['prenom_uti'] . ' ' . $user['nom_uti']) : "Stagiaire";
-$initials = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "ST";
+if (isset($_SESSION['user_filiere'])) {
+    //henia kanemlo wahd variable mn session li sejelna f login 
+    $filiere = $_SESSION['user_filiere'];
+} else {
+    //ila makantshi kanemlo developpement digital 
+    $filiere = "Développement Digital";
+}
+//kanjibo maeloumat ela utulisateur prenom ,nom b id dyal utulisateur li dkhal blogin  li eadna f session 
+$infos = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");
+$infos->execute([$_SESSION['user_id']]);
+$user = $infos->fetch();
+if ($user) {
+    $nom_complet = htmlspecialchars($user['prenom_uti'] . ' ' .$user['nom_uti']);
+    $initials = strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1));
+}
+//henia kanjibo nom d competence mn table d comptence 
+$compet = $pdo->query("SELECT nom_comp FROM competence");
+$competences= $compet->fetchAll(PDO::FETCH_COLUMN);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $titre = trim($_POST['titre']);
-    $description = trim($_POST['description']);
-    $technologie = trim($_POST['competence']);
-    $niveau = trim($_POST['niveau']);
-    if (!empty($titre) && !empty($description) && !empty($technologie) && !empty($niveau)) {
-        $sql = "INSERT INTO demande_aide (Titre, description, technologie, niveau, filiere, id_stagiaire) 
-                VALUES (?,?,?,?,?,?)";
-        $stmt = $pdo->prepare($sql);
-        $result = $stmt->execute([ $titre, $description,$technologie, $niveau,$filiere, $_SESSION['user_id']]);
+    extract($_POST);
+    if (isset($titre) && isset($description) && isset($competence) && isset($niveau) && 
+        trim($titre) != "" && trim($description) != "" && trim($competence) != "" && trim($niveau) != "") {
+            //kanemlo insert l donne f table dyal demande_aide:
+        $stmt = $pdo->prepare("INSERT INTO demande_aide (Titre, description, technologie, niveau, filiere, id_stagiaire) 
+                VALUES (?, ?, ?, ?, ?, ?)");
+        //kanemlo execute b infos li dakhal stg
+        $result = $stmt->execute([$titre, $description, $competence, $niveau, $filiere, $_SESSION['user_id']]);
+        //kanchofo wash sf tsejlat demande
         if ($result) {
             echo "<script>alert('✅ Demande publiée avec succès !'); window.location.href='demandes_aide.php';</script>";
             exit();
@@ -41,9 +58,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "<script>alert('❌ Veuillez remplir tous les champs.');</script>";
     }
 }
-$dashboard_link = "dashboard.php"; 
-if ($_SESSION['user_role']=== 'formateur') { $dashboard_link = "dashboard_formateur.php"; }
-elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboard_admin.php"; }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -63,29 +77,7 @@ elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboa
             --text-main: #1e293b;
             --text-muted: #64748b;
         }
-        .theme-formateur {
-            --sidebar-bg: #430b54; 
-            --primary: #df64d4; 
-            --primary-hover: #8447ac;
-            --main-bg:       #f8fafc;
-            --border:        #e2e8f0;
-            --text-main:     #1e293b;
-            --text-muted:    #64748b;
-            --green:         #22c55e;
-            --red:           #ef4444;
-            --yellow:        #f59e0b;
-        }
-        .theme-admin{
-     --sidebar-bg: #0c540b; 
-    --primary: #198218; 
-    --primary-hover: #1595b6;
-    --main-bg: #f8fafc; 
-    --border: #e2e8f0; 
-    --text-main: #1e293b; 
-    --text-muted: #64748b; 
-    --green: #10b981; /* Was success */
-    --red: #ef4444;   /* Was danger */
-}
+       
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
@@ -148,7 +140,7 @@ elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboa
         <h1>ISMO SkillSwap</h1>
         <p class="menu-title">GENERAL</p>
         <nav>
-            <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
+            <a href="dashboard.php" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
             <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
 
             <p class="menu-title">ACTIVITÉ</p>
@@ -160,7 +152,7 @@ elseif ($_SESSION['user_role']=== 'administrateur') { $dashboard_link = "dashboa
             <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
             <a href="Mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
             <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-                        <p class="menu-title" >COMPTE</p>
+        <p class="menu-title" >COMPTE</p>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
         </nav>
     </aside>

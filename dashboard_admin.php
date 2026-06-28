@@ -14,7 +14,7 @@ $userNomComplet = $user ? htmlspecialchars($user['prenom_uti'] . ' ' . $user['no
 $initials       = $user ? strtoupper(substr($user['prenom_uti'], 0, 1) . substr($user['nom_uti'], 0, 1)) : "AD";
 
 
-// Stats générales
+
 
 $statUsers      = $pdo->query("SELECT COUNT(*) FROM utilisateur")->fetchColumn();
 $statStagiaires = $pdo->query("SELECT COUNT(*) FROM utilisateur WHERE role = 'stagiaire'")->fetchColumn();
@@ -27,7 +27,7 @@ $statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_valida
 $statMentors    = $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'valide'")->fetchColumn();
 $statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 
-// Top 5 compétences les plus demandées
+
 $topComps = $pdo->query(
     "SELECT c.nom_comp, COUNT(v.id_validation) as nb
      FROM validation v
@@ -35,7 +35,7 @@ $topComps = $pdo->query(
      GROUP BY c.nom_comp"
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// Top 5 stagiaires par score
+
 $topStagiaires = $pdo->query(
     "SELECT u.prenom_uti, u.nom_uti, s.score_global, s.filiere
      FROM stagiaire s
@@ -43,7 +43,7 @@ $topStagiaires = $pdo->query(
      ORDER BY s.score_global DESC LIMIT 5"
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// Dernières demandes d'aide
+
 $lastDemandes = $pdo->query(
     "SELECT d.Titre AS titre, d.statut, u.prenom_uti, u.nom_uti, d.date_publication
      FROM demande_aide d
@@ -75,7 +75,6 @@ $lastDemandes = $pdo->query(
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
         .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
@@ -84,7 +83,6 @@ $lastDemandes = $pdo->query(
         .menu-item:hover, .menu-item.active { background: var(--primary); color: white;}
         .notif-dot { background: var(--yellow); color: #d6b810; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto;}
 
-        /* Main */
         .main  { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 28px; }
         header { display: flex; justify-content: space-between; align-items: center; }
         .admin-badge { background: #fee2e2; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
@@ -124,7 +122,6 @@ $lastDemandes = $pdo->query(
     color:#64748b;
 }
 
-        /* Section cards */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
@@ -133,7 +130,6 @@ $lastDemandes = $pdo->query(
         .section-title a { font-size: 12px; color: var(--blue); font-weight: 500; text-decoration: none; }
         .section-title a:hover { text-decoration: underline; }
 
-        /* Alert boxes */
         .alert-row { display: flex; gap: 16px; flex-wrap: wrap; }
         .alert-box { flex: 1; min-width: 180px; border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
         .alert-box.pending  { background: #fefce8; border: 1px solid #fde047; }
@@ -150,7 +146,6 @@ $lastDemandes = $pdo->query(
         .alert-box.danger  .alert-link  { color: var(--primary); }
         .alert-box.success .alert-link  { color: #15803d; }
 
-        /* Top compétences */
         .comp-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
         .comp-rank { width: 24px; height: 24px; border-radius: 50%; background: #eceef1; color: var(--blue); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .comp-name { font-size: 14px; font-weight: 600; flex: 1; }
@@ -158,7 +153,6 @@ $lastDemandes = $pdo->query(
         .comp-bar { height: 100%; border-radius: 20px; background: var(--blue); }
         .comp-nb  { font-size: 12px; color: var(--text-muted); min-width: 28px; text-align: right; }
 
-        /* Top stagiaires */
         .stag-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
         .stag-item:last-child { border-bottom: none; }
         .stag-av   { width: 34px; height: 34px; border-radius: 50%; background: var(--blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
@@ -169,7 +163,6 @@ $lastDemandes = $pdo->query(
         .medal-2 { background: #94a3b8; }
         .medal-3 { background: #b45309; }
 
-        /* Dernières demandes */
         .demande-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
         .demande-item:last-child { border-bottom: none; }
         .demande-title { font-size: 13px; font-weight: 600; flex: 1; }
@@ -180,14 +173,12 @@ $lastDemandes = $pdo->query(
         .status-dot.resolue  { background: var(--blue); }
         .status-dot.fermee   { background: #94a3b8; }
 
-        /* Quick actions */
         .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .qa-btn { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; text-decoration: none; color: var(--text-main); transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .qa-btn:hover { border-color: var(--primary); background: #fef2f2; }
         .qa-btn i { font-size: 22px; color: var(--primary); }
         .qa-btn span { font-size: 12px; font-weight: 600; }
 
-        /* Responsive */
         @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 1024px) {
             .sidebar { width: 80px; padding: 20px 10px; }
@@ -217,16 +208,12 @@ $lastDemandes = $pdo->query(
         <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
         <p class="menu-title">CONTRÔLE</p>
         <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
         </a>
          <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors</span>
-            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
         </a>
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
          <a href="gestion_utilisateurs.php"  class="menu-item"><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
         <a href="gestion_categories.php"  class="menu-item"><i class="fas fa-tags"></i> <span>Gestion categories</span></a>
-        <p class="menu-title">GENERAL</p>
-        <a href="satisfaction.php" class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
          <p class="menu-title" >COMPTE</p>
         <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passport</span></a>      
         <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
@@ -243,7 +230,7 @@ $lastDemandes = $pdo->query(
         <h1 class="page-title">Panneau de Contrôle Global</h1>
         <p class="page-sub">Bienvenue, <strong><?php echo $userNomComplet; ?></strong> — Surveillance de la plateforme ISMO SkillSwap</p>
     </div>
-    <!-- Statistiques Générales -->
+
 <div class="section-card">
     <div class="section-title">
         <span>
@@ -312,10 +299,10 @@ $lastDemandes = $pdo->query(
 
     </div>
 </div>
-    <!-- Grid contenu -->
+
     <div class="grid-2">
 
-        <!-- Top compétences -->
+
         <div class="section-card">
             <div class="section-title">
                 <span><i class="fas fa-fire" style="color:var(--primary); margin-right:8px;"></i>Top Compétences demandées</span>
@@ -337,7 +324,6 @@ $lastDemandes = $pdo->query(
             <?php endif; ?>
         </div>
 
-        <!-- Top stagiaires XP -->
         <div class="section-card">
             <div class="section-title">
                 <span><i class="fas fa-trophy" style="color:#fbbf24; margin-right:8px;"></i>Top Stagiaires XP</span>
@@ -362,9 +348,8 @@ $lastDemandes = $pdo->query(
 
     </div>
 
-    <!-- Dernières demandes + Quick Actions -->
     <div class="grid-2">
-        <!-- Quick Actions -->
+
         <div class="section-card">
             <div class="section-title"><span><i class="fas fa-bolt" style="color:var(--yellow); margin-right:8px;"></i>Actions Rapides</span></div>
             <div class="quick-actions">

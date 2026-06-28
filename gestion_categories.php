@@ -22,7 +22,6 @@ $statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statu
 $success_msg = '';
 $error_msg   = '';
 
-// ajouter compentece
 if (isset($_POST['add_competence'])) {
     $nom_comp         = trim($_POST['nom_comp'] ?? '');
     $categorie_new    = trim($_POST['categorie_new'] ?? '');
@@ -43,7 +42,6 @@ if (isset($_POST['add_competence'])) {
     }
 }
 
-//delete competence
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id   = (int) $_GET['delete'];
     $used = $pdo->prepare("SELECT COUNT(*) FROM validation WHERE id_comp = ?");
@@ -56,7 +54,6 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// select competnce
 $competences = $pdo->query(
     "SELECT id_comp, nom_comp, categorie,
             (SELECT COUNT(*) FROM validation WHERE id_comp = competence.id_comp) AS nb_demandes,
@@ -100,7 +97,6 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
-        /* Sidebar — نفس dashboard_admin */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
         .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
@@ -109,7 +105,6 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
         .notif-dot { background: var(--yellow); color: #1e293b; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: auto; }
 
-        /* Main */
         .main  { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
         header { display: flex; justify-content: space-between; align-items: center; }
         .admin-badge { background: #e0e7ff; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
@@ -118,26 +113,21 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         .page-title { font-size: 24px; font-weight: 700; }
         .page-sub   { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
-        /* Alertes */
         .alert { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
         .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .alert-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
-        /* Stats — نفس ستايل dashboard */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .stat-card  { background: white; border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,.06); transition: 0.3s; }
         .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.10); }
         .stat-num   { font-size: 24px; font-weight: 700; }
         .stat-label { font-size: 13px; color: var(--text-muted); }
 
-        /* Layout */
         .content-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
 
-        /* Section cards — نفس dashboard */
         .section-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; }
         .section-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
 
-        /* فورم */
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 7px; color: var(--text-main); }
         .form-group input,
@@ -153,7 +143,6 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-submit:hover { background: var(--primary-hover); }
 
-        /* Table compétences */
         .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .count-badge  { background: #e0e7ff; color: var(--primary); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 
@@ -171,7 +160,6 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
         .empty-state i { font-size: 36px; color: #cbd5e1; margin-bottom: 10px; display: block; }
 
-        /* Responsive */
         @media (max-width: 1100px) { .content-grid { grid-template-columns: 1fr; } }
         @media (max-width: 1024px) {
             .sidebar { width: 80px; padding: 20px 10px; }
@@ -198,17 +186,12 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         <a href="dashboard_admin.php"      class="menu-item "><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
         <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
         <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
-        </a>
+        </a>        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
          <a href="validation_mentors.php"    class="menu-item"><i class="fas fa-user-shield"></i>     <span>Valider Mentors</span>
-            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
         </a>
         <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i>            <span>Gestion Badges</span></a>
          <a href="gestion_utilisateurs.php"  class="menu-item "><i class="fas fa-users-cog"></i>       <span>Gérer Utilisateurs</span></a>
         <a href="gestion_categories.php"  class="menu-item active"><i class="fas fa-tags"></i> <span>Gestion categories</span></a>
-        <p class="menu-title">GENERAL</p>
-        <a href="satisfaction.php" class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
          <p class="menu-title" >COMPTE</p>
         <a href="passport.php" class="menu-item"><i class="fas fa-id-card"></i> <span>Passport</span></a>      
         <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
@@ -233,7 +216,6 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
         <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?php echo htmlspecialchars($error_msg); ?></div>
     <?php endif; ?>
 
-    <!-- Stats — نفس ستايل dashboard -->
     <div class="section-card">
         <div class="section-title">
             <span><i class="fas fa-chart-pie" style="color:var(--primary); margin-right:8px;"></i>Statistiques du Catalogue</span>
@@ -272,7 +254,6 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
 
     <div class="content-grid">
 
-        <!-- فورم إضافة -->
         <div class="section-card">
             <div class="section-title">
                 <span><i class="fas fa-plus-circle" style="color:var(--primary); margin-right:8px;"></i>Ajouter une compétence</span>
@@ -307,7 +288,6 @@ $totalValid = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation
             </form>
         </div>
 
-        <!-- Liste compétences -->
         <div class="section-card">
             <div class="table-header">
                 <div class="section-title" style="margin-bottom:0;">

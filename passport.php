@@ -13,10 +13,6 @@ $themeClass = 'theme-stagiaire';
 if (in_array($user_role, ['admin', 'administrateur'])) $themeClass = 'theme-admin';
 elseif ($user_role === 'formateur')                    $themeClass = 'theme-formateur';
 
-$dashboard_link = "dashboard.php";
-if ($user_role === 'formateur')                                { $dashboard_link = "dashboard_formateur.php"; }
-elseif (in_array($user_role, ['admin', 'administrateur']))     { $dashboard_link = "dashboard_admin.php"; }
-
 
 $queryUser = $pdo->prepare("SELECT * FROM utilisateur WHERE id_utilisateur = ?");
 $queryUser->execute([$userId]);
@@ -37,7 +33,6 @@ $validations_faites = 0;
 $total_users = $total_demandes = $total_valide = $total_mentors = 0;
 
 if ($user_role === 'stagiaire') {
-    // ── Stagiaire ──
     $stmtStag = $pdo->prepare("SELECT * FROM stagiaire WHERE id_utilisateur = ?");
     $stmtStag->execute([$userId]);
     $stagiaire    = $stmtStag->fetch();
@@ -71,12 +66,10 @@ if ($user_role === 'stagiaire') {
     $stmtBadges->execute([$userId]);
     $badges = $stmtBadges->fetchAll(PDO::FETCH_ASSOC);
 
-    // احصائيات
     $nbAides = $pdo->prepare("SELECT COUNT(*) FROM reponses_aide WHERE id_aidant = ? AND statut = 'accepte'");
     $nbAides->execute([$userId]);
     $aides_count = $nbAides->fetchColumn();
 
-    // كلاسمان
     $rankStmt = $pdo->query("SELECT id_utilisateur, RANK() OVER (ORDER BY score_global DESC) AS rang FROM stagiaire");
     foreach ($rankStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
         if ($r['id_utilisateur'] == $userId) { $classement = '#' . $r['rang']; break; }
@@ -88,7 +81,7 @@ if ($user_role === 'stagiaire') {
     $is_mentor = $chkMentor->fetchColumn() > 0;
 
 } elseif ($user_role === 'formateur') {
-    //Formateur
+
     $filiere = "Formateur ISMO";
     $stmt_v  = $pdo->prepare("SELECT COUNT(*) FROM validation WHERE id_formateur = ? AND etat_validation = 'valide'");
     $stmt_v->execute([$userId]);
@@ -108,7 +101,7 @@ if ($user_role === 'stagiaire') {
     $comps_valides = $stmtCompsValid->fetchAll(PDO::FETCH_ASSOC);
 
 } elseif (in_array($user_role, ['admin', 'administrateur'])) {
-    // ── Admin ──
+
     $filiere        = "Administrateur ISMO";
     $total_users    = $pdo->query("SELECT COUNT(*) FROM utilisateur")->fetchColumn();
     $total_demandes = $pdo->query("SELECT COUNT(*) FROM demande_aide")->fetchColumn();
@@ -164,7 +157,6 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         .btn-pdf { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; }
         .btn-pdf:hover { opacity: 0.9; }
 
-        /* Profile */
         .profile-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 32px; display: flex; gap: 28px; align-items: center; }
         .avatar-large { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; flex-shrink: 0; position: relative; }
         .av-stagiaire { background: #4f46e5; color: white; }
@@ -181,18 +173,15 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         .profile-meta{ display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; }
         .profile-meta span { display: flex; align-items: center; gap: 5px; }
 
-        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .card-stat  { background: white; padding: 20px; border-radius: 14px; border: 1px solid var(--border); text-align: center; }
         .card-stat .val   { font-size: 28px; font-weight: 700; display: block; margin-bottom: 4px; }
         .card-stat .label { color: var(--text-muted); font-size: 12px; font-weight: 500; }
 
-        /* Section */
         .section-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 28px; }
         .section-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         .section-card h3 i { color: var(--primary); }
 
-        /* Compétences stagiaire */
         .comp-item { background: #f8fafc; border-radius: 12px; border: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 10px; transition: 0.2s; }
         .comp-item:hover { border-color: #c7d2fe; background: white; }
         .comp-item:last-child { margin-bottom: 0; }
@@ -208,7 +197,6 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         .comp-right .validator span { color: var(--primary); }
         .comp-cat { display: inline-block; background: #ede9fe; color: #7c3aed; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-bottom: 4px; }
 
-        /* Badges */
         .badges-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .badge-card  { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: #fefce8; }
         .badge-card:hover { border-color: #fde047; }
@@ -217,14 +205,12 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         .b-details p  { font-size: 11px; color: var(--text-muted); }
         .b-date       { font-size: 10px; color: #94a3b8; margin-top: 3px; display: block; }
 
-        /* Formateur recent validations */
         .val-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; background: #f8fafc; border: 1px solid var(--border); margin-bottom: 8px; }
         .val-item:last-child { margin-bottom: 0; }
         .val-comp { font-size: 14px; font-weight: 600; flex: 1; }
         .val-stag { font-size: 12px; color: var(--text-muted); }
         .val-date { font-size: 11px; color: #94a3b8; }
 
-        /* Admin quick actions */
         .admin-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .action-btn { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 18px; text-align: center; text-decoration: none; color: var(--text-main); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
         .action-btn:hover { border-color: var(--primary); background: #f0fdf4; }
@@ -263,48 +249,9 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
 </head>
 <body class="<?php echo $themeClass; ?>">
 
-<aside class="sidebar">
-    <h1>ISMO SkillSwap</h1>
-    <p class="menu-title">GENERAL</p>
-    <nav>
-        <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
-
-        <?php if (in_array($user_role, ['stagiaire', 'formateur'])): ?>
-        <p class="menu-title">ACTIVITÉ</p>
-        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i>
-            <span><?php echo $user_role === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
-        </a>
-        <?php if ($user_role === 'stagiaire'): ?>
-            <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
-        <?php endif; ?>
-        <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
-        <?php if ($user_role === 'stagiaire'): ?>
-        <p class="menu-title">COMPÉTENCES</p>
-        <a href="competence.php" class="menu-item"><i class="fas fa-award"></i> <span>Compétences</span></a>
-        <?php endif; ?>
-        <a href="passport.php"   class="menu-item active"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
-<?php endif; ?>
-        <?php if (in_array($user_role, ['admin', 'formateur', 'administrateur'])): ?>
-        <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-        </a>
-        <a href="validation_mentors.php" class="menu-item"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
-        </a>
-        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
-        <?php endif; ?>
-
-        <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
-        <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
-        <?php endif; ?>
-        <p class="menu-title" >COMPTE</p>
-        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
-            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </nav>
-</aside>>
-
+<?php if($user_role==="admin")include 'sidebar.php'; ?>
+<?php if($user_role==="formateur")include 'sidebarform.php'; ?>
+<?php if($user_role==="stagiaire")include 'sidebarstgpass.php'; ?>
 <main class="main">
     <header>
         <div class="search-box">
@@ -319,7 +266,6 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         <button class="btn-pdf" onclick="window.print()"><i class="fas fa-file-pdf"></i> Export PDF</button>
     </div>
 
-    <!-- Profile -->
     <div class="profile-card">
         <?php
         $avClass = 'av-stagiaire';
@@ -351,7 +297,6 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         </div>
     </div>
 
-    <!-- ══ STAGIAIRE ══ -->
     <?php if ($user_role === 'stagiaire'): ?>
     <div class="stats-grid">
         <div class="card-stat" style="background:#f5f3ff; border-color:#ddd6fe;">
@@ -426,7 +371,6 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         <?php endif; ?>
     </div>
 
-    <!-- ══ FORMATEUR ══ -->
     <?php elseif ($user_role === 'formateur'): ?>
     <div class="stats-grid" style="grid-template-columns: repeat(2,1fr);">
         <div class="card-stat" style="background:#faf5ff; border-color:#e9d5ff;">
@@ -469,7 +413,6 @@ $niveauLabel = ['debutant' => '🌱 Débutant', 'intermediaire' => '⚡ Intermé
         </div>
     </div>
 
-    <!-- ══ ADMIN ══ -->
     <?php elseif (in_array($user_role, ['admin', 'administrateur'])): ?>
     <div class="stats-grid">
         <div class="card-stat" style="background:#fef2f2; border-color:#fecaca;">

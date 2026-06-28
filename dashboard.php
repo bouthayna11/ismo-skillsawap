@@ -208,7 +208,6 @@ foreach ($all_mentors as $m) {
         <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
         <a href="Mentors.php"   class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
             <p class="menu-title" >COMPTE</p>
-            <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
             <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
         </nav>
     </aside>

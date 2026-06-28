@@ -5,8 +5,6 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['formateu
     exit();
 }
 require_once 'config.php';
-$statCompPend   = $pdo->query("SELECT COUNT(*) FROM validation WHERE etat_validation = 'en_attente'")->fetchColumn();
-$statMentorsPend= $pdo->query("SELECT COUNT(*) FROM demande_mentorat WHERE statut = 'en_attente' AND (message_demande IS NULL OR message_demande = '')")->fetchColumn();
 $userId = $_SESSION['user_id'];
 $user_role = $_SESSION['user_role'];
 $queryUser = $pdo->prepare("SELECT prenom_uti, nom_uti FROM utilisateur WHERE id_utilisateur = ?");
@@ -44,7 +42,6 @@ if (isset($_GET['msg'])) {
 }
 
 
-// Stats
 
 $stmtStats = $pdo->query("SELECT statut, COUNT(*) as nb FROM demande_mentorat WHERE message_demande IS NULL OR message_demande = '' GROUP BY statut");
 $stats_raw = $stmtStats->fetchAll(PDO::FETCH_ASSOC);
@@ -73,7 +70,6 @@ $mentor_requests = $queryRequests->fetchAll(PDO::FETCH_ASSOC);
 $dashboard_link = "dashboard.php";
 if ($user_role === 'formateur')                                    { $dashboard_link = "dashboard_formateur.php"; }
 elseif (in_array($user_role, ['administrateur', 'admin']))         { $dashboard_link = "dashboard_admin.php"; }
-// Determine la classe dyal le theme b-hssab le rôle
 $themeClass = 'theme-stagiaire';
 if (in_array($user_role, ['admin', 'administrateur'])) {
     $themeClass = 'theme-admin';
@@ -110,13 +106,12 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
     --border: #e2e8f0; 
     --text-main: #1e293b; 
     --text-muted: #64748b; 
-    --green: #10b981; /* Was success */
-    --red: #ef4444;   /* Was danger */
+    --green: #10b981; 
+    --red: #ef4444;   
 }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { display: flex; background: var(--main-bg); font-family: 'Inter', sans-serif; min-height: 100vh; color: var(--text-main); }
 
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar h1 { font-size: 20px; font-weight: 700; margin-bottom: 32px; }
         .menu-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px 8px; font-weight: 600; }
@@ -124,7 +119,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
         .menu-item i { margin-right: 12px; width: 20px; text-align: center; }
         .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
 
-        /* Main */
         .main  { flex: 1; padding: 40px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
         header { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
         .search-box { background: white; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); flex: 1; max-width: 400px; display: flex; align-items: center; }
@@ -134,12 +128,10 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
         .page-title { font-size: 24px; font-weight: 700; }
         .page-sub   { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
-        /* Alertes */
         .alert { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
         .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .alert-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
-        /* Stats */
         .stats-bar { display: flex; gap: 16px; flex-wrap: wrap; }
         .stat-box  { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 22px; flex: 1; min-width: 110px; text-align: center; }
         .stat-num  { font-size: 28px; font-weight: 700; }
@@ -148,7 +140,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
         .stat-num.valide  { color: var(--green); }
         .stat-num.refuse  { color: var(--red); }
 
-        /* Cards */
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
 
         .request-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 22px; display: flex; flex-direction: column; gap: 16px; transition: box-shadow 0.2s; }
@@ -177,7 +168,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
         .empty-state i { font-size: 48px; color: #cbd5e1; margin-bottom: 16px; display: block; }
         .empty-state p { font-size: 15px; }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .sidebar { width: 80px; padding: 20px 10px; }
             .sidebar h1, .sidebar span, .menu-title { display: none; }
@@ -195,45 +185,10 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
 </head>
 <body class="<?php echo $themeClass; ?>">
 
-<aside class="sidebar">
-    <h1>ISMO SkillSwap</h1>
-    <p class="menu-title">GENERAL</p>
-    <nav>
-        <a href="<?php echo $dashboard_link; ?>" class="menu-item"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-        <a href="profil.php" class="menu-item"><i class="far fa-user"></i> <span>Profil</span></a>
-
-        <?php if (in_array($user_role, ['stagiaire', 'formateur'])): ?>
-        <p class="menu-title">ACTIVITÉ</p>
-        <a href="demandes_aide.php" class="menu-item"><i class="far fa-question-circle"></i>
-            <span><?php echo $user_role === 'formateur' ? "Offres d'aide" : "Demandes d'aide"; ?></span>
-        </a>
-        <?php if ($user_role === 'stagiaire'): ?>
-            <a href="creer_demande.php" class="menu-item"><i class="far fa-plus-square"></i> <span>Créer une demande</span></a>
-        <?php endif; ?>
-        <a href="recherche.php" class="menu-item"><i class="fas fa-search"></i> <span>Recherche</span></a>
-        <a href="passport.php"   class="menu-item"><i class="fas fa-id-card"></i> <span>Passeport</span></a>
-        <a href="mentors.php" class="menu-item"><i class="fas fa-user-graduate"></i> <span>Mentors</span></a>
-<?php endif; ?>
-        <?php if (in_array($user_role, ['admin', 'formateur', 'administrateur'])): ?>
-        <p class="menu-title">CONTRÔLE</p>
-        <a href="validation_competence.php" class="menu-item"><i class="fas fa-clipboard-check"></i> <span>Valider Compétences</span>
-            <?php if ($statCompPend > 0): ?><span class="notif-dot"><?php echo $statCompPend; ?></span><?php endif; ?>
-        </a>
-        <a href="validation_mentors.php" class="menu-item active"><i class="fas fa-user-shield"></i> <span>Valider Mentors</span>
-            <?php if ($statMentorsPend > 0): ?><span class="notif-dot"><?php echo $statMentorsPend; ?></span><?php endif; ?>
-        </a>
-        <a href="gestion_badges.php" class="menu-item"><i class="fas fa-medal"></i> <span>Gestion Badges</span></a>
-        <?php endif; ?>
-
-        <?php if (in_array($user_role, ['admin', 'administrateur'])): ?>
-        <a href="gestion_utilisateurs.php" class="menu-item"><i class="fas fa-users-cog"></i> <span>Gérer Utilisateurs</span></a>
-        <a href="gestion_categories.php"   class="menu-item"><i class="fas fa-tags"></i> <span>Gestion Catégories</span></a>
-        <?php endif; ?>
-        <p class="menu-title" >COMPTE</p>
-        <a href="satisfaction.php"  class="menu-item"><i class="far fa-star"></i> <span>Avis & Satisfaction</span></a>
-            <a href="logout.php" class="menu-item" style="color: #f87171;"style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
-    </nav>
-</aside>
+<body class="<?php echo $themeClass; ?>">
+<?php if($user_role==="admin")include 'sidebar.php'; ?>
+<?php if($user_role==="formateur")include 'sidebarform.php'; ?>
+<?php if($user_role==="stagiaire")include 'sidebarstgpass.php'; ?>
 
 <main class="main">
     <header>
@@ -256,7 +211,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
         </div>
     <?php endif; ?>
 
-    <!-- Stats -->
     <div class="stats-bar">
         <div class="stat-box">
             <div class="stat-num pending"><?php echo $stats['en_attente']; ?></div>
@@ -276,7 +230,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
         </div>
     </div>
 
-    <!-- Cards -->
     <?php if (empty($mentor_requests)): ?>
         <div class="empty-state">
             <i class="fas fa-user-graduate"></i>
@@ -290,7 +243,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
         ?>
         <div class="request-card" data-name="<?php echo strtolower($req['prenom_uti'] . ' ' . $req['nom_uti']); ?>">
 
-            <!-- Top -->
             <div class="card-top">
                 <div class="avatar-lg"><?php echo $mInitials; ?></div>
                 <div>
@@ -302,7 +254,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
                 </div>
             </div>
 
-            <!-- Mini Stats -->
             <div class="card-stats">
                 <div class="mini-stat">
                     <div class="mini-stat-num"><?php echo $req['score_global'] ?? 0; ?></div>
@@ -318,7 +269,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
                 </div>
             </div>
 
-            <!-- Message si كاين -->
             <?php if (!empty($req['message_demande'])): ?>
             <div class="msg-box">
                 <i class="fas fa-comment-alt" style="margin-right:6px; color:var(--primary);"></i>
@@ -326,7 +276,6 @@ if (in_array($user_role, ['admin', 'administrateur'])) {
             </div>
             <?php endif; ?>
 
-            <!-- Actions -->
             <div class="card-actions">
                 <a href="validation_mentors.php?action=accepter&id_demande=<?php echo $req['id_demande_m']; ?>"
                    class="btn-accept"
